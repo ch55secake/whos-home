@@ -172,3 +172,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Pycharm (POS) folder
+.idea
+
+#DS_Store
+.DS_Store

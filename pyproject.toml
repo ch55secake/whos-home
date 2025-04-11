@@ -1,0 +1,15 @@
+[project]
+name = "whos-home"
+version = "1.0.0"
+description = "🛰️ scan for people on your local network and see whos home"
+authors = [ {name = "ch55secake"} ]
+license = {text = "GPL-3.0"}
+readme = "README.md"
+
+requires-python = "3.12"
+dependencies = []
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
