@@ -2,12 +2,22 @@
 name = "whos-home"
 version = "1.0.0"
 description = "🛰️ scan for people on your local network and see whos home"
-authors = [ {name = "ch55secake"} ]
+authors = [{ name = "ch55secake"} ]
 license = {text = "GPL-3.0"}
 readme = "README.md"
 
-requires-python = "3.12"
-dependencies = []
+requires-python = ">=3.12"
+
+[tool.poetry]
+packages = [{ include = "src" }]
+
+[tool.poetry.dependencies]
+typer = "0.15.2"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^8.3.4"
+pytest-mock = "3.14.0"
+xmltodict = "0.14.2"
 
 
 [build-system]
