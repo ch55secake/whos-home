@@ -82,8 +82,6 @@ class NmapExecutor(object):
                 f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
                 f"{self.host}/{self.cidr}")
 
-
-
     def build_icmp_host_discovery_scan(self) -> str:
         """
         Build a host discovery scan using nmap
