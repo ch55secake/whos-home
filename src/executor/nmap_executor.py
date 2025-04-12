@@ -35,7 +35,7 @@ class AvailableNmapFlags(Enum):
     EXCLUDE_PORTS = "-sn" # -sn: No port scan (only host discovery)
 
 
-class NmapCommandBuilder(object):
+class NmapCommandBuilder:
     def __init__(self, host, cidr) -> None:
         self.host = host
         self.cidr = cidr
@@ -71,7 +71,7 @@ class NmapCommandBuilder(object):
         flags = ' '.join(flag.value for flag in self.enabled_flags)
         return f"nmap {flags} {self.host}/{self.cidr}"
 
-class NmapExecutor(object):
+class NmapExecutor:
     def __init__(self, host: str, cidr: str, timeout: float = 60) -> None:
         """
         Executor for nmap commands will provide network scan
