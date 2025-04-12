@@ -18,6 +18,14 @@ class NmapExecutor(object):
         self.executor = DefaultExecutor(timeout=self.timeout)
 
 
+    def execute_icmp_host_discovery(self) -> CommandResult:
+        """
+        Execute a host discovery scan using nmap
+        :return:
+        """
+        command: str = self.build_icmp_host_discovery_scan()
+        return self.executor.execute(command)
+
     def execute_passive_scan(self) -> CommandResult:
         """
 
@@ -28,11 +36,24 @@ class NmapExecutor(object):
 
     def execute_aggressive_scan(self) -> CommandResult:
         """
-
+        Run an aggressive nmap port scan
         :return:
         """
-        command: str = self.build_aggressive_privileged_os_scan()
+        command: str = self.build_aggressive_privileged_scan()
+        #print(command)
         return self.executor.execute(command)
+
+
+    def build_icmp_host_discovery_scan(self) -> str:
+        """
+        Build a host discovery scan using nmap
+        :returns: The command as a string
+        """
+        return (f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
+                f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
+                f"{AvailableNmapFlags.ICMP_PING.value} "
+                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+                f"{self.host}/{self.ranges}")
 
     def build_quiet_slow_scan(self) -> str:
         """
@@ -40,41 +61,50 @@ class NmapExecutor(object):
         :return: nmap command as a string
         """
         return (f"nmap {AvailableNmapFlags.COMMON_PORTS} "
+                f"{AvailableNmapFlags.SERVICE_SCAN} "
                 f"{AvailableNmapFlags.NORMAL_TIMING} "
                 f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT} "
                 f"{self.host}/{self.ranges}")
 
-    def build_aggressive_privileged_os_scan(self) -> str:
+    def build_aggressive_privileged_scan(self) -> str:
         """
-        Build an aggressive privileged scan that will scan and discover OS details quickly, but will only scan over
+        Build an aggressive privileged port scan using the -A argument but will only scan over
         common ports
         :return: nmap command as a string
         """
-        return (f"sudo nmap {AvailableNmapFlags.COMMON_PORTS} "
-                f"{AvailableNmapFlags.AGGRESSIVE_TIMING} "
-                f"{AvailableNmapFlags.OS_DETECTION} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT} "
+        return (f"sudo nmap {AvailableNmapFlags.COMMON_PORTS.value} "
+                f"{AvailableNmapFlags.SERVICE_SCAN.value} "
+                f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
+                f"{AvailableNmapFlags.AGGRESSIVE.value} "
+                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
                 f"{self.host}/{self.ranges}")
-
-
 
 
 class AvailableNmapFlags(Enum):
     # Need max to add his sweaty little flags
+    # :)
 
     """
     Available Nmap flags for building commands
     """
-    OS_DETECTION = "-O"
+    SERVICE_SCAN = "-sV"
 
-    OS_AND_SERVICE_DETECTION = "-A"
+    AGGRESSIVE = "-A"
 
     COMMON_PORTS = "-F"
 
     FULL_PORT_SCAN = "-p-"
 
-    AGGRESSIVE_TIMING = "-T4"
+    AGGRESSIVE_TIMING = "-T5"
 
     NORMAL_TIMING = "-T3"
 
-    XML_OUTPUT_TO_STDOUT = "-oX - "
+    XML_OUTPUT_TO_STDOUT = "-oX -"
+
+    ICMP_PING = "-PE -PP -PM" # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
+
+    ARP_PING = "-PR" # -PR: ARP ping scan (local network only)
+
+    COMBINED_PING = "-PE -PP -PM -PR" # -PE/PP/PM/PR: Combined ICMP and ARP ping scan
+
+    EXCLUDE_PORTS = "-sn" # -sn: No port scan (only host discovery)

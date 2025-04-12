@@ -19,4 +19,4 @@ def test_build_quiet_slow_scan():
 def test_build_aggressive_privileged_os_scan():
     executor = NmapExecutor(host="10.0.0.1", ranges="16")
     expected_command = "sudo nmap -F -T4 -O -oX 10.0.0.1/16"
-    assert executor.build_aggressive_privileged_os_scan() == expected_command
+    assert executor.build_aggressive_privileged_scan() == expected_command

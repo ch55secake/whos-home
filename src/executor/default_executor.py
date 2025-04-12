@@ -13,14 +13,16 @@ class DefaultExecutor:
         """
         self.timeout = timeout
 
-    def execute(self, command: str) -> CommandResult:
+    def execute(self, command: str) -> CommandResult | None:
         """
         Executes a command and returns the result
         :return:
         """
+        print(command)
         try:
             result: subprocess.CompletedProcess[str] = subprocess.run(
                 command,
+                shell=True,
                 capture_output=True,
                 text=True,
                 check=True,
