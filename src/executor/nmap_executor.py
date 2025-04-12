@@ -4,6 +4,7 @@ from enum import Enum
 from src.data.command_result import CommandResult
 from src.executor.default_executor import DefaultExecutor
 
+
 class AvailableNmapFlags(Enum):
     # Need max to add his sweaty little flags
     # :)
@@ -24,15 +25,15 @@ class AvailableNmapFlags(Enum):
 
     NORMAL_TIMING = "-T3"
 
-    XML_OUTPUT_TO_STDOUT = "-oX -" # xml output to terminal
+    XML_OUTPUT_TO_STDOUT = "-oX -"  # xml output to terminal
 
-    ICMP_PING = "-PE -PP -PM" # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
+    ICMP_PING = "-PE -PP -PM"  # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
 
-    ARP_PING = "-PR" # -PR: ARP ping scan (local network only)
+    ARP_PING = "-PR"  # -PR: ARP ping scan (local network only)
 
-    COMBINED_PING = "-PE -PP -PM -PR" # -PE/PP/PM/PR: Combined ICMP and ARP ping scan
+    COMBINED_PING = "-PE -PP -PM -PR"  # -PE/PP/PM/PR: Combined ICMP and ARP ping scan
 
-    EXCLUDE_PORTS = "-sn" # -sn: No port scan (only host discovery)
+    EXCLUDE_PORTS = "-sn"  # -sn: No port scan (only host discovery)
 
 
 class NmapCommandBuilder:
@@ -68,7 +69,7 @@ class NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.XML_OUTPUT_TO_STDOUT)
 
     def build(self) -> str:
-        flags = ' '.join(flag.value for flag in self.enabled_flags)
+        flags = " ".join(flag.value for flag in self.enabled_flags)
         return f"nmap {flags} {self.host}/{self.cidr}"
 
 
@@ -93,12 +94,14 @@ class NmapExecutor:
         Execute a host discovery scan using nmap
         :return: result of command execution
         """
-        command: str = (NmapCommandBuilder(self.host, self.cidr)
-                        .enable_exclude_ports()
-                        .enable_aggressive_timing()
-                        .enable_icmp_ping()
-                        .enable_xml_output()
-                        .build())
+        command: str = (
+            NmapCommandBuilder(self.host, self.cidr)
+            .enable_exclude_ports()
+            .enable_aggressive_timing()
+            .enable_icmp_ping()
+            .enable_xml_output()
+            .build()
+        )
         return self.executor.execute(command)
 
     def execute_arp_host_discovery(self) -> CommandResult:
@@ -106,12 +109,14 @@ class NmapExecutor:
         Execute an arp host discovery scan using nmap
         :return: result of command execution
         """
-        command: str = (NmapCommandBuilder(self.host, self.cidr)
-                        .enable_exclude_ports()
-                        .enable_aggressive_timing()
-                        .enable_arp_ping()
-                        .enable_xml_output()
-                        .build())
+        command: str = (
+            NmapCommandBuilder(self.host, self.cidr)
+            .enable_exclude_ports()
+            .enable_aggressive_timing()
+            .enable_arp_ping()
+            .enable_xml_output()
+            .build()
+        )
         return self.executor.execute(command)
 
     def execute_arp_icmp_host_discovery(self) -> CommandResult:
@@ -119,13 +124,15 @@ class NmapExecutor:
         Execute an arp/icmp host discovery scan using nmap
         :return: result of command execution
         """
-        command: str = (NmapCommandBuilder(self.host, self.cidr)
-                        .enable_exclude_ports()
-                        .enable_aggressive_timing()
-                        .enable_icmp_ping()
-                        .enable_arp_ping()
-                        .enable_xml_output()
-                        .build())
+        command: str = (
+            NmapCommandBuilder(self.host, self.cidr)
+            .enable_exclude_ports()
+            .enable_aggressive_timing()
+            .enable_icmp_ping()
+            .enable_arp_ping()
+            .enable_xml_output()
+            .build()
+        )
         return self.executor.execute(command)
 
     def execute_passive_scan(self) -> CommandResult:
@@ -133,12 +140,14 @@ class NmapExecutor:
         Executes a more passive host discovery scan using nmap
         :return: result of command execution
         """
-        command: str = (NmapCommandBuilder(self.host, self.cidr)
-                        .enable_flag(AvailableNmapFlags.COMMON_PORTS)
-                        .enable_flag(AvailableNmapFlags.SERVICE_SCAN)
-                        .enable_flag(AvailableNmapFlags.NORMAL_TIMING)
-                        .enable_xml_output()
-                        .build())
+        command: str = (
+            NmapCommandBuilder(self.host, self.cidr)
+            .enable_flag(AvailableNmapFlags.COMMON_PORTS)
+            .enable_flag(AvailableNmapFlags.SERVICE_SCAN)
+            .enable_flag(AvailableNmapFlags.NORMAL_TIMING)
+            .enable_xml_output()
+            .build()
+        )
         return self.executor.execute(command)
 
     def execute_aggressive_scan(self) -> CommandResult:
@@ -146,10 +155,12 @@ class NmapExecutor:
         Run an aggressive nmap port scan
         :return: result of command execution
         """
-        command: str = (NmapCommandBuilder(self.host, self.cidr)
-                        .enable_flag(AvailableNmapFlags.COMMON_PORTS)
-                        .enable_aggressive_timing()
-                        .enable_flag(AvailableNmapFlags.AGGRESSIVE)
-                        .enable_xml_output()
-                        .build())
+        command: str = (
+            NmapCommandBuilder(self.host, self.cidr)
+            .enable_flag(AvailableNmapFlags.COMMON_PORTS)
+            .enable_aggressive_timing()
+            .enable_flag(AvailableNmapFlags.AGGRESSIVE)
+            .enable_xml_output()
+            .build()
+        )
         return self.executor.execute(command)
