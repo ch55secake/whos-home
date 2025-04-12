@@ -4,7 +4,10 @@ from src.data.command_result import CommandResult
 from src.executor.default_executor import DefaultExecutor
 
 
-class NmapExecutor(object):
+class NmapExecutor:
+    """
+    Uses DefaultExecutor to execute nmap commands
+    """
 
     def __init__(self, host: str, cidr: str, timeout: float = 60) -> None:
         """
@@ -16,7 +19,6 @@ class NmapExecutor(object):
         self.cidr = cidr
         self.timeout = timeout
         self.executor = DefaultExecutor(timeout=self.timeout)
-
 
     def execute_icmp_host_discovery(self) -> CommandResult:
         """
@@ -42,7 +44,6 @@ class NmapExecutor(object):
         command: str = self.build_arp_icmp_host_discovery_scan()
         return self.executor.execute(command)
 
-
     def execute_passive_scan(self) -> CommandResult:
         """
         Executes a more passive host discovery scan using nmap
@@ -64,45 +65,53 @@ class NmapExecutor(object):
         Build arp host discovery scan using nmap
         :return: command as string
         """
-        return (f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
-                f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
-                f"{AvailableNmapFlags.ARP_PING.value} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.cidr}")
+        return (
+            f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
+            f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
+            f"{AvailableNmapFlags.ARP_PING.value} "
+            f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+            f"{self.host}/{self.cidr}"
+        )
 
     def build_arp_icmp_host_discovery_scan(self) -> str:
         """
         Build both arp and icmp host discovery scan using nmap
         :return: command as string
         """
-        return (f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
-                f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
-                f"{AvailableNmapFlags.ICMP_PING.value} "
-                f"{AvailableNmapFlags.ARP_PING.value} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.cidr}")
+        return (
+            f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
+            f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
+            f"{AvailableNmapFlags.ICMP_PING.value} "
+            f"{AvailableNmapFlags.ARP_PING.value} "
+            f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+            f"{self.host}/{self.cidr}"
+        )
 
     def build_icmp_host_discovery_scan(self) -> str:
         """
         Build a host discovery scan using nmap
         :returns: The command as a string
         """
-        return (f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
-                f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
-                f"{AvailableNmapFlags.ICMP_PING.value} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.cidr}")
+        return (
+            f"nmap {AvailableNmapFlags.EXCLUDE_PORTS.value} "
+            f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
+            f"{AvailableNmapFlags.ICMP_PING.value} "
+            f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+            f"{self.host}/{self.cidr}"
+        )
 
     def build_quiet_slow_scan(self) -> str:
         """
         Build a quiet slow scan will only scan over common ports with normal timing
         :return: nmap command as a string
         """
-        return (f"nmap {AvailableNmapFlags.COMMON_PORTS.value} "
-                f"{AvailableNmapFlags.SERVICE_SCAN.value} "
-                f"{AvailableNmapFlags.NORMAL_TIMING.value} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.cidr}")
+        return (
+            f"nmap {AvailableNmapFlags.COMMON_PORTS.value} "
+            f"{AvailableNmapFlags.SERVICE_SCAN.value} "
+            f"{AvailableNmapFlags.NORMAL_TIMING.value} "
+            f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+            f"{self.host}/{self.cidr}"
+        )
 
     def build_aggressive_privileged_scan(self) -> str:
         """
@@ -110,12 +119,14 @@ class NmapExecutor(object):
         common ports
         :return: nmap command as a string
         """
-        return (f"sudo nmap {AvailableNmapFlags.COMMON_PORTS.value} "
-                f"{AvailableNmapFlags.SERVICE_SCAN.value} "
-                f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
-                f"{AvailableNmapFlags.AGGRESSIVE.value} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.cidr}")
+        return (
+            f"sudo nmap {AvailableNmapFlags.COMMON_PORTS.value} "
+            f"{AvailableNmapFlags.SERVICE_SCAN.value} "
+            f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
+            f"{AvailableNmapFlags.AGGRESSIVE.value} "
+            f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+            f"{self.host}/{self.cidr}"
+        )
 
 
 class AvailableNmapFlags(Enum):
@@ -138,12 +149,12 @@ class AvailableNmapFlags(Enum):
 
     NORMAL_TIMING = "-T3"
 
-    XML_OUTPUT_TO_STDOUT = "-oX -" # xml output to terminal
+    XML_OUTPUT_TO_STDOUT = "-oX -"  # xml output to terminal
 
-    ICMP_PING = "-PE -PP -PM" # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
+    ICMP_PING = "-PE -PP -PM"  # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
 
-    ARP_PING = "-PR" # -PR: ARP ping scan (local network only)
+    ARP_PING = "-PR"  # -PR: ARP ping scan (local network only)
 
-    COMBINED_PING = "-PE -PP -PM -PR" # -PE/PP/PM/PR: Combined ICMP and ARP ping scan
+    COMBINED_PING = "-PE -PP -PM -PR"  # -PE/PP/PM/PR: Combined ICMP and ARP ping scan
 
-    EXCLUDE_PORTS = "-sn" # -sn: No port scan (only host discovery)
+    EXCLUDE_PORTS = "-sn"  # -sn: No port scan (only host discovery)
