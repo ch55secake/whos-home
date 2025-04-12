@@ -1,4 +1,4 @@
-import datetime # [missing-module-docstring]
+import datetime  # [missing-module-docstring]
 import subprocess
 
 import rich
@@ -31,8 +31,8 @@ class DefaultExecutor:
         ) as progress:
             progress.add_task(
                 description=f"[bold magenta] Running [bold cyan]{command}[/bold cyan] at: "
-                            f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
-                            f".......[/bold magenta]",
+                f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
+                f".......[/bold magenta]",
                 total=None,
             )
             try:
