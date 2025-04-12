@@ -29,21 +29,18 @@ class NmapOutputParser:
         Create a scan result object from the parsed xml output
         :return: a scan result object
         """
-        return ScanResult(
-            run_stats=self.get_runstats(),
-            hosts=self.get_hosts()
-        )
+        return ScanResult(run_stats=self.get_runstats(), hosts=self.get_hosts())
 
     def get_runstats(self) -> OrderedDict[str, Any]:
         """
         Get the run stats from the scan result
         :return: The run stats
         """
-        return self.parse()['nmaprun']['runstats']
+        return self.parse()["nmaprun"]["runstats"]
 
     def get_hosts(self) -> list[OrderedDict[str, Any]]:
         """
         Get the hosts from the scan result
         :return: The hosts
         """
-        return self.parse()['nmaprun']['host']
+        return self.parse()["nmaprun"]["host"]

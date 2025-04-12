@@ -1,5 +1,3 @@
-
-
 def format_response(response: dict) -> None:
     """
 

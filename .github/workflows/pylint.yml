@@ -37,6 +37,17 @@ jobs:
       run: |
         poetry install
 
+    - name: Fail if black reformats files
+      run: |
+          black . --quiet
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Code is not formatted properly. Please run 'black .'"
+            git status
+            exit 1
+          else
+            echo "All files are properly formatted!"
+          fi
+
     - name: Analysing the code with pylint
       run: |
         poetry run pylint $(git ls-files '*.py')
