@@ -19,14 +19,16 @@ def now(host: Annotated[str, t.Option(help="The host that you want to scan again
         cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
         schedule: Annotated[str, t.Option(help="Run scans on a schedule of any of these values: 5m, 15m, 30m, 45m, 1h")] = "",
         host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = "",
-        icmp: Annotated[str, t.Option(help="Run scans with just an ICMP packet")] = "",):
+        icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = False,
+        arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
+        icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,):
     """
     Discover hosts on the network using nmap
     """
     executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr)
     discovery = executor.execute_icmp_host_discovery()
     parser: NmapOutputParser = NmapOutputParser(discovery)
-    parsed = parser.create_scan_result()
+    parsed: ScanResult = parser.create_scan_result()
     rich.print_json(json.dumps(parsed.run_stats))
     for host in parsed.hosts:
         rich.print_json(json.dumps(host))
