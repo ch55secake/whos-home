@@ -1,7 +1,7 @@
 from enum import Enum
 
-from src.data import CommandResult
-from src.executor import DefaultExecutor
+from src.data.command_result import CommandResult
+from src.executor.default_executor import DefaultExecutor
 
 
 class NmapExecutor(object):

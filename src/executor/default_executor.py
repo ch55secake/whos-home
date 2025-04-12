@@ -2,7 +2,7 @@ import subprocess
 
 import rich
 
-from src.data import CommandResult
+from src.data.command_result import CommandResult
 
 class DefaultExecutor:
 
