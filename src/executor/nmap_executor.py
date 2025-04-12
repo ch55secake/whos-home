@@ -71,7 +71,12 @@ class NmapCommandBuilder:
         flags = ' '.join(flag.value for flag in self.enabled_flags)
         return f"nmap {flags} {self.host}/{self.cidr}"
 
+
 class NmapExecutor:
+    """
+    Uses DefaultExecutor to execute nmap commands
+    """
+
     def __init__(self, host: str, cidr: str, timeout: float = 60) -> None:
         """
         Executor for nmap commands will provide network scan
@@ -122,7 +127,6 @@ class NmapExecutor:
                         .enable_xml_output()
                         .build())
         return self.executor.execute(command)
-
 
     def execute_passive_scan(self) -> CommandResult:
         """

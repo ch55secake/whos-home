@@ -10,18 +10,25 @@ from src.parser.nmap_output_parser import NmapOutputParser
 
 app: t.Typer = t.Typer()
 
-@app.command(help="Scan a provided host to find the devices that are currently on the host that you provided, "
-                  "will execute either a passive or aggressive scan depending on the option provided. You are also "
-                  "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
-             short_help="Scan for details about your network")
+
+@app.command(
+    help="Scan a provided host to find the devices that are currently on the host that you provided, "
+    "will execute either a passive or aggressive scan depending on the option provided. You are also "
+    "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
+    short_help="Scan for details about your network",
+)
 # Change this option back to an arg at some point
-def now(host: Annotated[str, t.Option(help="The host that you want to scan against.")] = "192.168.1.0",
-        cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
-        schedule: Annotated[str, t.Option(help="Run scans on a schedule of any of these values: 5m, 15m, 30m, 45m, 1h")] = "",
-        host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = "",
-        icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = False,
-        arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
-        icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,):
+def now(
+    host: Annotated[str, t.Option(help="The host that you want to scan against.")] = "192.168.1.0",
+    cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
+    schedule: Annotated[
+        str, t.Option(help="Run scans on a schedule of any of these values: 5m, 15m, 30m, 45m, 1h")
+    ] = "",
+    host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = "",
+    icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = False,
+    arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
+    icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
+):
     """
     Discover hosts on the network using nmap
     """
@@ -30,8 +37,8 @@ def now(host: Annotated[str, t.Option(help="The host that you want to scan again
     parser: NmapOutputParser = NmapOutputParser(discovery)
     parsed: ScanResult = parser.create_scan_result()
     rich.print_json(json.dumps(parsed.run_stats))
-    for host in parsed.hosts:
-        rich.print_json(json.dumps(host))
+    for hosts in parsed.hosts:
+        rich.print_json(json.dumps(hosts))
 
     pass
 
@@ -42,8 +49,14 @@ def callback() -> None:
     🛰️ Curious about the devices connected to your network?
     """
 
-def main():
-   app()
+
+def main() -> None:
+    """
+    Entrypoint hack for poetry builds
+    :return: nothing starts the app
+    """
+    app()
+
 
 if __name__ == "__main__":
     main()
