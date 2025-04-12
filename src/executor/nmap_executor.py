@@ -6,14 +6,14 @@ from src.executor.default_executor import DefaultExecutor
 
 class NmapExecutor(object):
 
-    def __init__(self, host: str, ranges: str, timeout: float = 60) -> None:
+    def __init__(self, host: str, cidr: str, timeout: float = 60) -> None:
         """
         Executor for nmap commands will provide network scan
         :param host: list of hosts to execute scans on
-        :param ranges: ip range to execute scans on
+        :param cidr: ip range to execute scans on
         """
         self.host = host
-        self.ranges = ranges
+        self.cidr = cidr
         self.timeout = timeout
         self.executor = DefaultExecutor(timeout=self.timeout)
 
@@ -28,7 +28,7 @@ class NmapExecutor(object):
 
     def execute_passive_scan(self) -> CommandResult:
         """
-
+        Executes a more passive host discovery scan using nmap
         :return:
         """
         command: str = self.build_quiet_slow_scan()
@@ -40,7 +40,6 @@ class NmapExecutor(object):
         :return:
         """
         command: str = self.build_aggressive_privileged_scan()
-        #print(command)
         return self.executor.execute(command)
 
 
@@ -53,18 +52,18 @@ class NmapExecutor(object):
                 f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
                 f"{AvailableNmapFlags.ICMP_PING.value} "
                 f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.ranges}")
+                f"{self.host}/{self.cidr}")
 
     def build_quiet_slow_scan(self) -> str:
         """
         Build a quiet slow scan will only scan over common ports with normal timing
         :return: nmap command as a string
         """
-        return (f"nmap {AvailableNmapFlags.COMMON_PORTS} "
-                f"{AvailableNmapFlags.SERVICE_SCAN} "
-                f"{AvailableNmapFlags.NORMAL_TIMING} "
-                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT} "
-                f"{self.host}/{self.ranges}")
+        return (f"nmap {AvailableNmapFlags.COMMON_PORTS.value} "
+                f"{AvailableNmapFlags.SERVICE_SCAN.value} "
+                f"{AvailableNmapFlags.NORMAL_TIMING.value} "
+                f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
+                f"{self.host}/{self.cidr}")
 
     def build_aggressive_privileged_scan(self) -> str:
         """
@@ -77,12 +76,13 @@ class NmapExecutor(object):
                 f"{AvailableNmapFlags.AGGRESSIVE_TIMING.value} "
                 f"{AvailableNmapFlags.AGGRESSIVE.value} "
                 f"{AvailableNmapFlags.XML_OUTPUT_TO_STDOUT.value} "
-                f"{self.host}/{self.ranges}")
+                f"{self.host}/{self.cidr}")
 
 
 class AvailableNmapFlags(Enum):
     # Need max to add his sweaty little flags
     # :)
+    # Wholesome
 
     """
     Available Nmap flags for building commands
@@ -99,7 +99,7 @@ class AvailableNmapFlags(Enum):
 
     NORMAL_TIMING = "-T3"
 
-    XML_OUTPUT_TO_STDOUT = "-oX -"
+    XML_OUTPUT_TO_STDOUT = "-oX -" # xml output to terminal
 
     ICMP_PING = "-PE -PP -PM" # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
 

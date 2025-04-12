@@ -8,7 +8,7 @@ class DefaultExecutor:
 
     def __init__(self, timeout: float):
         """
-
+        Creates a default command executor to be used by the other executors.
         :param timeout:
         """
         self.timeout = timeout
