@@ -37,8 +37,8 @@ def now(
     parser: NmapOutputParser = NmapOutputParser(discovery)
     parsed: ScanResult = parser.create_scan_result()
     rich.print_json(json.dumps(parsed.run_stats))
-    for host in parsed.hosts:
-        rich.print_json(json.dumps(host))
+    for hosts in parsed.hosts:
+        rich.print_json(json.dumps(hosts))
 
     pass
 
@@ -50,7 +50,11 @@ def callback() -> None:
     """
 
 
-def main():
+def main() -> None:
+    """
+    Entrypoint hack for poetry builds
+    :return: nothing starts the app
+    """
     app()
 
 

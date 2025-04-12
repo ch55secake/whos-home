@@ -4,7 +4,10 @@ from src.data.command_result import CommandResult
 from src.executor.default_executor import DefaultExecutor
 
 
-class NmapExecutor(object):
+class NmapExecutor:
+    """
+    Uses DefaultExecutor to execute nmap commands
+    """
 
     def __init__(self, host: str, cidr: str, timeout: float = 60) -> None:
         """

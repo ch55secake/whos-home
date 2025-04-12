@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from typing import OrderedDict, Any
 
 import xmltodict
@@ -8,6 +7,9 @@ from src.data.scan_result import ScanResult
 
 
 class NmapOutputParser:
+    """
+    Parse nmap output from xml stdout into json and then into ScanResults
+    """
 
     def __init__(self, command_result: CommandResult) -> None:
         """
