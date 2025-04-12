@@ -39,7 +39,7 @@ jobs:
 
     - name: Fail if black reformats files
       run: |
-          black . --quiet
+          poetry run black . --quiet
           if [ -n "$(git status --porcelain)" ]; then
             echo "Code is not formatted properly. Please run 'black .'"
             git status
