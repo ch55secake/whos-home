@@ -14,10 +14,12 @@ app: t.Typer = t.Typer()
                   "will execute either a passive or aggressive scan depending on the option provided. You are also "
                   "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
              short_help="Scan for details about your network")
-def now(host: Annotated[str, t.Argument(help="The host that you want to scan against.")],
+# Change this option back to an arg at some point
+def now(host: Annotated[str, t.Option(help="The host that you want to scan against.")] = "192.168.1.0",
         cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
         schedule: Annotated[str, t.Option(help="Run scans on a schedule of any of these values: 5m, 15m, 30m, 45m, 1h")] = "",
-        host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = ""):
+        host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = "",
+        icmp: Annotated[str, t.Option(help="Run scans with just an ICMP packet")] = "",):
     """
     Discover hosts on the network using nmap
     """
