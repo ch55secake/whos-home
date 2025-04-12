@@ -1,6 +1,5 @@
 ## Todo
 
-- Progress bar/indicator -> https://typer.tiangolo.com/tutorial/progressbar/#progress-bar_1
 - Be able to scan multiple ranges
 - web interface
 - db
