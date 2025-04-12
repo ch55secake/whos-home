@@ -39,13 +39,12 @@ jobs:
 
     - name: Fail if black reformats files
       run: |
-          poetry run black . --quiet
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Code is not formatted properly. Please run 'black .'"
-            git status
+          echo "Checking formatting......."
+          if ! poetry run black . --check --diff; then
+            echo ""
+            echo "❌ Code formatting issues found."
+            echo "💡 Please run 'black .' locally to fix formatting."
             exit 1
-          else
-            echo "All files are properly formatted!"
           fi
 
     - name: Analysing the code with pylint
