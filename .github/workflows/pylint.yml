@@ -43,7 +43,7 @@ jobs:
           if ! poetry run black . --check --diff; then
             echo ""
             echo "❌ Code formatting issues found."
-            echo "💡 Please run 'black .' locally to fix formatting."
+            echo "💡 Please run 'poetry run black .' locally to fix formatting."
             exit 1
           fi
 
