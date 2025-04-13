@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
-from typing import OrderedDict, Any, Callable
+from typing import OrderedDict, Any
 
 from src.data.device import Device
 
