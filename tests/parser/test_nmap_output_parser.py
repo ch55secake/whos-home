@@ -17,7 +17,7 @@ def fake_nmap_response():
     if not resource_path.exists():
         pytest.fail(f"Resource file {resource_path} not found!")
 
-    with open(resource_path) as file:
+    with open(resource_path, encoding="UTF-8") as file:
         return file.read()
 
 

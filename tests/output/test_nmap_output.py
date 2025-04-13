@@ -1,8 +1,7 @@
 import pytest
-from rich.console import Console
-from rich.text import Text
-from io import StringIO
 
+from src.data.device import Device
+from src.data.scan_result import ScanResult
 from src.output.nmap_output import (
     format_and_output,
     build_ip_message,
@@ -12,8 +11,6 @@ from src.output.nmap_output import (
     get_unique_devices_message,
     get_host_totals_message,
 )
-from src.data.device import Device
-from src.data.scan_result import ScanResult
 
 
 @pytest.fixture

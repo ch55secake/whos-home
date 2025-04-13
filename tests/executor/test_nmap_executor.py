@@ -1,17 +1,17 @@
-import pytest
 from unittest.mock import patch, MagicMock
+import pytest
 
 from src.executor.nmap_executor import NmapCommandBuilder, NmapExecutor, AvailableNmapFlags
 
 
 @pytest.fixture
-def builder():
+def test_nmap_builder():
     return NmapCommandBuilder("192.168.1.0", "24")
 
 
-def test_builder_adds_flags_correctly(builder):
-    builder.enable_aggressive().enable_service_discovery().enable_arp_ping()
-    command = builder.build()
+def test_builder_adds_flags_correctly(test_nmap_builder):
+    test_nmap_builder.enable_aggressive().enable_service_discovery().enable_arp_ping()
+    command = test_nmap_builder.build()
     assert "-A" in command
     assert "-sV" in command
     assert "-PR" in command
@@ -33,7 +33,7 @@ def test_builder_disable_flag():
 
 @patch("src.executor.nmap_executor.DefaultExecutor")
 @patch("src.executor.nmap_executor.running_as_sudo", return_value=False)
-def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
+def test_execute_icmp_host_discovery(mock_executor):
     mock_result = MagicMock()
     mock_result.stdout = "<xml>output</xml>"
     mock_executor.return_value.execute.return_value = mock_result
@@ -53,7 +53,7 @@ def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
 
 @patch("src.executor.nmap_executor.DefaultExecutor")
 @patch("src.executor.nmap_executor.running_as_sudo", return_value=True)
-def test_execute_aggressive_scan(mock_sudo, mock_executor):
+def test_execute_aggressive_scan(mock_executor):
     mock_result = MagicMock()
     mock_executor.return_value.execute.return_value = mock_result
 
