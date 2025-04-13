@@ -8,7 +8,7 @@ from src.data.command_result import CommandResult
 
 @patch("src.executor.default_executor.running_as_sudo", return_value=False)
 @patch("src.executor.default_executor.subprocess.run")
-def test_execute_warns_if_not_sudo(mock_subprocess, capsys):
+def test_execute_warns_if_not_sudo(mock_subprocess, mock_sudo, capsys):
     mock_subprocess.return_value = MagicMock(
         stdout="output",
         stderr="",
@@ -26,7 +26,7 @@ def test_execute_warns_if_not_sudo(mock_subprocess, capsys):
 
 @patch("src.executor.default_executor.running_as_sudo", return_value=True)
 @patch("src.executor.default_executor.subprocess.run")
-def test_execute_success(mock_subprocess):
+def test_execute_success(mock_subprocess, mock_sudo):
     mock_subprocess.return_value = MagicMock(
         stdout="success output",
         stderr="",
@@ -42,7 +42,7 @@ def test_execute_success(mock_subprocess):
 
 @patch("src.executor.default_executor.running_as_sudo", return_value=True)
 @patch("src.executor.default_executor.subprocess.run", side_effect=subprocess.CalledProcessError(00, "bad"))
-def test_execute_failure(capsys):
+def test_execute_failure(mock_subprocess, mock_sudo, capsys):
     executor = DefaultExecutor(timeout=5)
     result = executor.execute("badcommand")
 
@@ -57,10 +57,10 @@ def test_execute_failure(capsys):
 
 
 @patch("src.executor.default_executor.os.getuid", return_value=0)
-def test_running_as_sudo_true():
+def test_running_as_sudo_true(mock_getuid):
     assert running_as_sudo() is True
 
 
 @patch("src.executor.default_executor.os.getuid", return_value=1000)
-def test_running_as_sudo_false():
+def test_running_as_sudo_false(mock_getuid):
     assert running_as_sudo() is False

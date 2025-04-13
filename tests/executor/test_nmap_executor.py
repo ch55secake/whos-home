@@ -33,7 +33,7 @@ def test_builder_disable_flag():
 
 @patch("src.executor.nmap_executor.DefaultExecutor")
 @patch("src.executor.nmap_executor.running_as_sudo", return_value=False)
-def test_execute_icmp_host_discovery(mock_executor):
+def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
     mock_result = MagicMock()
     mock_result.stdout = "<xml>output</xml>"
     mock_executor.return_value.execute.return_value = mock_result
@@ -53,7 +53,7 @@ def test_execute_icmp_host_discovery(mock_executor):
 
 @patch("src.executor.nmap_executor.DefaultExecutor")
 @patch("src.executor.nmap_executor.running_as_sudo", return_value=True)
-def test_execute_aggressive_scan(mock_executor):
+def test_execute_aggressive_scan(mock_sudo, mock_executor):
     mock_result = MagicMock()
     mock_executor.return_value.execute.return_value = mock_result
 
