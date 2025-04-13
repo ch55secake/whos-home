@@ -1,6 +1,5 @@
 ## Todo
 
-- write more tests
 - add markdown table option for output (disabled by default)
 - fix os scanning
 - Be able to scan multiple ranges
@@ -8,7 +7,6 @@
 - db
 - notify user
 - way to compare known devices to devices just scanned
-- better output
 
 ### wanted args
 - --schedule={1m | 5m | 10m | 15m | 30m | 1h | 1h30m}
