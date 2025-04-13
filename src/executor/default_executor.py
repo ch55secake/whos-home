@@ -16,7 +16,7 @@ class DefaultExecutor:
     def __init__(self, timeout: float, warn_about_sudo: bool = True):
         """
         Creates a default command executor to be used by the other executors.
-        :param timeout:
+        :param timeout: how long to wait before the subprocess times out.
         """
         self.timeout = timeout
         self.warn_about_sudo = warn_about_sudo
@@ -29,12 +29,15 @@ class DefaultExecutor:
 
         if self.warn_about_sudo and not running_as_sudo():
             rich.print(
-                "[bold red] Warning: [/bold red] [red] you are not root, this will make nmap fall back to a TCP scan "
-                "instead of ARP or ICMP [red] "
+                "❗️[bold red] Warning:[/bold red][red] you are not root, this will make nmap fall back to a TCP scan "
+                "instead of ARP or ICMP. This also means that you will lose information such as the MAC address of "
+                "the device.[red] "
             )
 
         with Progress(
-            SpinnerColumn(style="magenta"),
+            # Hack so I can have the spinner more nicely spaced
+            TextColumn(" "),
+            SpinnerColumn(style="magenta", speed=20),
             TextColumn("[progress.description]{task.description}"),
             transient=True,
         ) as progress:

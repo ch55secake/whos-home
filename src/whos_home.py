@@ -4,6 +4,7 @@ import typer as t
 
 from src.data.command_result import CommandResult
 from src.data.device import Device
+from src.data.scan_result import ScanResult
 from src.executor.nmap_executor import NmapExecutor
 from src.output.nmap_output import format_and_output
 from src.parser.nmap_output_parser import NmapOutputParser
@@ -27,7 +28,7 @@ def now(
     only_icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = False,
     only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
     icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
-):
+) -> None:
     """
     Discover hosts on the network using nmap
     """
@@ -36,8 +37,9 @@ def now(
 
     if result_from_scan.success:
         parser: NmapOutputParser = NmapOutputParser(result_from_scan)
-        outputted_devices: list[Device] = parser.create_scan_result().get_devices()
-        format_and_output(outputted_devices)
+        outputted_scan_result: ScanResult = parser.create_scan_result()
+        outputted_devices: list[Device] = outputted_scan_result.get_devices()
+        format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
 
 
 def execute_scan_based_on_flag(
