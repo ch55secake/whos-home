@@ -19,7 +19,7 @@ def test_devices():
         Device(ip_addr="192.168.0.1", mac_addr="00:11:22:33:44:55", hostname="router"),
         Device(ip_addr="192.168.0.2", mac_addr=None, hostname="laptop"),
         Device(ip_addr="192.168.0.3", mac_addr="AA:BB:CC:DD:EE:FF", hostname="phone"),
-        Device(ip_addr="192.168.0.4", mac_addr="11:22:33:44:55:66", hostname="router"),  # same hostname
+        Device(ip_addr="192.168.0.4", mac_addr="11:22:33:44:55:66", hostname="router"),
     ]
 
 
@@ -71,7 +71,7 @@ def test_get_ip_and_mac_message_without_mac():
 
 def test_get_number_of_unique_devices(test_devices):
     count = get_number_of_unique_devices(test_devices)
-    assert count == 3  # router, laptop, phone
+    assert count == 3
 
 
 def test_get_unique_devices_message(test_devices):
