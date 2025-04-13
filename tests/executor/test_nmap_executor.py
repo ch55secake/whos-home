@@ -1,46 +1,67 @@
-from unittest.mock import patch
-
 import pytest
+from unittest.mock import patch, MagicMock
 
-from src.executor.nmap_executor import NmapExecutor
-
-
-class MockFlags:
-    SERVICE_SCAN = "-sV"
-
-    AGGRESSIVE = "-A"
-
-    COMMON_PORTS = "-F"
-
-    FULL_PORT_SCAN = "-p-"
-
-    AGGRESSIVE_TIMING = "-T5"
-
-    NORMAL_TIMING = "-T3"
-
-    XML_OUTPUT_TO_STDOUT = "-oX -"  # xml output to terminal
-
-    ICMP_PING = "-PE -PP -PM"  # -PE/PP/PM: ICMP echo, timestamp, and netmask request discovery probes
-
-    ARP_PING = "-PR"  # -PR: ARP ping scan (local network only)
-
-    COMBINED_PING = "-PE -PP -PM -PR"  # -PE/PP/PM/PR: Combined ICMP and ARP ping scan
-
-    EXCLUDE_PORTS = "-sn"  # -sn: No port scan (only host discovery)
+from src.executor.nmap_executor import NmapCommandBuilder, NmapExecutor, AvailableNmapFlags
 
 
-# Ignore these for now as the method usage has changed
-@pytest.skip
-@patch("src.executor.nmap_executor.AvailableNmapFlags", MockFlags)
-def test_build_quiet_slow_scan():
-    executor = NmapExecutor(host="192.168.1.1", cidr="24")
-    expected_command = "nmap -F -T3 -oX 192.168.1.1/24"
-    assert executor.build_quiet_slow_scan() == expected_command
+@pytest.fixture
+def builder():
+    return NmapCommandBuilder("192.168.1.0", "24")
 
 
-@pytest.skip
-@patch("src.executor.nmap_executor.AvailableNmapFlags", MockFlags)
-def test_build_aggressive_privileged_os_scan():
-    executor = NmapExecutor(host="10.0.0.1", cidr="16")
-    expected_command = "sudo nmap -F -T4 -O -oX 10.0.0.1/16"
-    assert executor.build_aggressive_privileged_scan() == expected_command
+def test_builder_adds_flags_correctly(builder):
+    builder.enable_aggressive().enable_service_discovery().enable_arp_ping()
+    command = builder.build()
+    assert "-A" in command
+    assert "-sV" in command
+    assert "-PR" in command
+    assert "nmap" in command
+
+
+def test_builder_sets_sudo():
+    builder = NmapCommandBuilder("10.0.0.1", "16").set_sudo()
+    command = builder.build()
+    assert command.startswith("sudo")
+
+
+def test_builder_disable_flag():
+    builder = NmapCommandBuilder("127.0.0.1", "8")
+    builder.enable_aggressive().disable_flag(AvailableNmapFlags.AGGRESSIVE)
+    command = builder.build()
+    assert "-A" not in command
+
+
+@patch("src.executor.nmap_executor.DefaultExecutor")
+@patch("src.executor.nmap_executor.running_as_sudo", return_value=False)
+def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
+    mock_result = MagicMock()
+    mock_result.stdout = "<xml>output</xml>"
+    mock_executor.return_value.execute.return_value = mock_result
+
+    executor = NmapExecutor("192.168.1.0", "24")
+    result = executor.execute_icmp_host_discovery()
+
+    assert mock_executor.called
+    assert result.stdout == "<xml>output</xml>"
+    cmd = mock_executor.return_value.execute.call_args[0][0]
+    assert "-sV" in cmd
+    assert "-sn" in cmd
+    assert "-T5" in cmd
+    assert "-PE" in cmd
+    assert "-oX" in cmd
+
+
+@patch("src.executor.nmap_executor.DefaultExecutor")
+@patch("src.executor.nmap_executor.running_as_sudo", return_value=True)
+def test_execute_aggressive_scan(mock_sudo, mock_executor):
+    mock_result = MagicMock()
+    mock_executor.return_value.execute.return_value = mock_result
+
+    executor = NmapExecutor("10.0.0.1", "24")
+    result = executor.execute_aggressive_scan()
+
+    assert result == mock_result
+    cmd = mock_executor.return_value.execute.call_args[0][0]
+    assert "-A" in cmd
+    assert "-T5" in cmd
+    assert "-F" in cmd
