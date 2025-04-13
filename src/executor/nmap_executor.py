@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from enum import Enum
 
 from src.data.command_result import CommandResult
-from src.executor.default_executor import DefaultExecutor
+from src.executor.default_executor import DefaultExecutor, running_as_sudo
 
 
 class AvailableNmapFlags(Enum):
@@ -16,6 +17,8 @@ class AvailableNmapFlags(Enum):
     SERVICE_SCAN = "-sV"
 
     AGGRESSIVE = "-A"
+
+    OS_DETECTION = "-O"
 
     COMMON_PORTS = "-F"
 
@@ -37,9 +40,10 @@ class AvailableNmapFlags(Enum):
 
 
 class NmapCommandBuilder:
-    def __init__(self, host, cidr) -> None:
+    def __init__(self, host: str, cidr: str, sudo: bool = False) -> None:
         self.host = host
         self.cidr = cidr
+        self.sudo = sudo
         self.enabled_flags = set()
 
     def enable_flag(self, flag: AvailableNmapFlags) -> NmapCommandBuilder:
@@ -59,6 +63,19 @@ class NmapCommandBuilder:
     def enable_aggressive_timing(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.AGGRESSIVE_TIMING)
 
+    def enable_service_discovery(self) -> NmapCommandBuilder:
+        return self.enable_flag(AvailableNmapFlags.SERVICE_SCAN)
+
+    def enable_aggressive(self) -> NmapCommandBuilder:
+        """
+        If you are going to use this the code needs to handle port scanning, or this throws errors
+        :return: NmapCommandBuilder
+        """
+        return self.enable_flag(AvailableNmapFlags.AGGRESSIVE)
+
+    def enable_os_detection(self) -> NmapCommandBuilder:
+        return self.enable_flag(AvailableNmapFlags.OS_DETECTION)
+
     def enable_icmp_ping(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.ICMP_PING)
 
@@ -68,9 +85,13 @@ class NmapCommandBuilder:
     def enable_xml_output(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.XML_OUTPUT_TO_STDOUT)
 
+    def set_sudo(self) -> NmapCommandBuilder:
+        self.sudo = True
+        return self
+
     def build(self) -> str:
         flags = " ".join(flag.value for flag in self.enabled_flags)
-        return f"nmap {flags} {self.host}/{self.cidr}"
+        return f"{"sudo" if self.sudo else ""} nmap {flags} {self.host}/{self.cidr}"
 
 
 class NmapExecutor:
@@ -83,11 +104,14 @@ class NmapExecutor:
         Executor for nmap commands will provide network scan
         :param host: list of hosts to execute scans on
         :param cidr: ip range to execute scans on
+        :param timeout: timeout of command execution in seconds
         """
         self.host = host
         self.cidr = cidr
         self.timeout = timeout
         self.executor = DefaultExecutor(timeout=self.timeout)
+        self.privileged = running_as_sudo()
+        self.builder = NmapCommandBuilder(host, cidr, self.privileged)
 
     def execute_icmp_host_discovery(self) -> CommandResult:
         """
@@ -95,7 +119,7 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            NmapCommandBuilder(self.host, self.cidr)
+            self.builder.enable_service_discovery()
             .enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_icmp_ping()
@@ -110,7 +134,7 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            NmapCommandBuilder(self.host, self.cidr)
+            self.builder.enable_service_discovery()
             .enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_arp_ping()
@@ -125,8 +149,11 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            NmapCommandBuilder(self.host, self.cidr)
+            self.builder
+            # .enable_os_detection()
+            .enable_service_discovery()
             .enable_exclude_ports()
+            # .enable_flag(AvailableNmapFlags.COMMON_PORTS)
             .enable_aggressive_timing()
             .enable_icmp_ping()
             .enable_arp_ping()
@@ -141,8 +168,7 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            NmapCommandBuilder(self.host, self.cidr)
-            .enable_flag(AvailableNmapFlags.COMMON_PORTS)
+            self.builder.enable_flag(AvailableNmapFlags.COMMON_PORTS)
             .enable_flag(AvailableNmapFlags.SERVICE_SCAN)
             .enable_flag(AvailableNmapFlags.NORMAL_TIMING)
             .enable_xml_output()
@@ -156,8 +182,7 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            NmapCommandBuilder(self.host, self.cidr)
-            .enable_flag(AvailableNmapFlags.COMMON_PORTS)
+            self.builder.enable_flag(AvailableNmapFlags.COMMON_PORTS)
             .enable_aggressive_timing()
             .enable_flag(AvailableNmapFlags.AGGRESSIVE)
             .enable_xml_output()

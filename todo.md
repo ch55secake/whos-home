@@ -1,5 +1,8 @@
 ## Todo
 
+- write more tests
+- add markdown table option for output (disabled by default)
+- fix os scanning
 - Be able to scan multiple ranges
 - web interface
 - db
