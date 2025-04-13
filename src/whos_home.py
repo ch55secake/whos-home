@@ -1,14 +1,9 @@
-import json
-import os
 from typing import Annotated
 
-import rich
 import typer as t
-from click import command
 
 from src.data.command_result import CommandResult
 from src.data.device import Device
-from src.data.scan_result import ScanResult
 from src.executor.nmap_executor import NmapExecutor
 from src.output.nmap_output import format_and_output
 from src.parser.nmap_output_parser import NmapOutputParser
