@@ -8,5 +8,5 @@ class Device:
     """
 
     hostname: str
-    mac_addr: str
     ip_addr: str
+    mac_addr: str | None
