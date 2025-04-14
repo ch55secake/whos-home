@@ -31,6 +31,7 @@ def now(
     only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
     icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
     verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
+    timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
 ) -> None:
     """
     Discover hosts on the network using nmap
@@ -39,7 +40,7 @@ def now(
     if verbose:
         Logger().enable()
 
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr)
+    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
     result_from_scan: CommandResult = execute_scan_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
 
     if result_from_scan.success:
