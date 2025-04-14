@@ -4,6 +4,7 @@ import xmltodict
 
 from src.data.command_result import CommandResult
 from src.data.scan_result import ScanResult
+from src.util.logger import Logger
 
 
 class NmapOutputParser:
@@ -23,6 +24,7 @@ class NmapOutputParser:
         Parse the xml output and return an OrderedDict
         :return: an ordered dict from the xml output
         """
+        Logger().debug(f"Parsing nmap output from stdout: {self.command_result.stdout} ")
         xml_output: str = self.command_result.stdout
         return xmltodict.parse(xml_output)
 
@@ -31,6 +33,7 @@ class NmapOutputParser:
         Create a scan result object from the parsed xml output
         :return: a scan result object
         """
+        Logger().debug("Creating scan result from xml output.... ")
         return ScanResult(run_stats=self.get_runstats(), hosts=self.get_hosts())
 
     def get_runstats(self) -> OrderedDict[str, Any]:

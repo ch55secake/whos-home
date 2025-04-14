@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import subprocess
 
@@ -6,6 +7,7 @@ import rich
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from src.data.command_result import CommandResult
+from src.util.logger import Logger
 
 
 class DefaultExecutor:
@@ -27,6 +29,7 @@ class DefaultExecutor:
         :return: command result or none depending on success
         """
 
+        Logger().debug(f"Executing command: {command} with timeout: {self.timeout} and privileged: {running_as_sudo()}")
         if self.warn_about_sudo and not running_as_sudo():
             rich.print(
                 "❗️[bold red] Warning:[/bold red][red] you are not root, this will make nmap fall back to a TCP scan "
@@ -60,6 +63,7 @@ class DefaultExecutor:
             except subprocess.CalledProcessError as e:
                 rich.print(f"[bold red] error occurred whilst executing nmap command, error: {e} [/bold red]")
 
+            Logger().debug("Creating command result.... ")
             return CommandResult(
                 command=" ".join(command),
                 stdout="" if not result else result.stdout.strip(),
