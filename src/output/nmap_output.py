@@ -1,7 +1,11 @@
+import datetime
+import logging
+
 import rich
 
 from src.data.device import Device
 from src.data.scan_result import ScanResult
+from src.util.logger import Logger
 
 
 def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
@@ -11,6 +15,7 @@ def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
     :param devices: set of devices to output
     :return: nothing, will just print
     """
+    Logger().debug("Looping through devices to output.... ")
     for device in devices:
         rich.print(get_ip_and_mac_message(device))
     rich.print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))

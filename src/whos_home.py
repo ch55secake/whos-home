@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 import typer as t
@@ -8,6 +9,7 @@ from src.data.scan_result import ScanResult
 from src.executor.nmap_executor import NmapExecutor
 from src.output.nmap_output import format_and_output
 from src.parser.nmap_output_parser import NmapOutputParser
+from src.util.logger import Logger
 
 app: t.Typer = t.Typer()
 
@@ -28,11 +30,17 @@ def now(
     only_icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = False,
     only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
     icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
+    verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
+    timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
 ) -> None:
     """
     Discover hosts on the network using nmap
     """
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr)
+
+    if verbose:
+        Logger().enable()
+
+    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
     result_from_scan: CommandResult = execute_scan_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
 
     if result_from_scan.success:
@@ -54,7 +62,9 @@ def execute_scan_based_on_flag(
     :return: the command result after command execution
     """
     if only_arp and only_icmp or icmp_and_arp:
+        Logger().debug("Running nmap with both arp and icmp...")
         return executor.execute_arp_icmp_host_discovery()
+    Logger().debug(f"Running nmap with only {"arp" if only_arp else "icmp"}...")
     return executor.execute_arp_host_discovery() if only_arp else executor.execute_icmp_host_discovery()
 
 
