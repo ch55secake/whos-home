@@ -13,7 +13,7 @@ class ScanResult:
     """
 
     run_stats: OrderedDict[str, Any]
-    hosts: list[dict]
+    hosts: list[dict] | dict
 
     def get_hosts_up_from_runstats(self) -> int:
         """
@@ -34,7 +34,7 @@ class ScanResult:
         Get the address from the scan result based on type
         :return: The address
         """
-        addresses = self.hosts[i]["address"]
+        addresses = self.hosts[i]["address"] if isinstance(self.hosts, list) else self.hosts["address"]
         if isinstance(addresses, dict):
             addresses = [addresses]
 
@@ -47,6 +47,9 @@ class ScanResult:
         Get the hostname from the scan result
         :return: The hostname
         """
+        if isinstance(self.hosts, dict):
+            return self.hosts["hostnames"]["hostname"]["@name"]
+
         if self.hosts[i].get("hostnames") is None:
             return None
         return self.hosts[i]["hostnames"]["hostname"]["@name"]
