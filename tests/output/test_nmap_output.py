@@ -71,12 +71,12 @@ def test_get_ip_and_mac_message_without_mac():
 
 def test_get_number_of_unique_devices(test_devices):
     count = get_number_of_unique_devices(test_devices)
-    assert count == 3
+    assert count == 4
 
 
 def test_get_unique_devices_message(test_devices):
     msg = get_unique_devices_message(test_devices)
-    assert "3" in msg
+    assert "4" in msg
     assert "unique devices" in msg
 
 
