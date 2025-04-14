@@ -1,9 +1,6 @@
-import datetime
-import logging
-
 import rich
 
-from output.typer_output_builder import TyperOutputBuilder
+from src.output.typer_output_builder import TyperOutputBuilder
 from src.data.device import Device
 from src.data.scan_result import ScanResult
 from src.util.logger import Logger
