@@ -3,6 +3,7 @@ import logging
 
 import rich
 
+from output.typer_output_builder import TyperOutputBuilder
 from src.data.device import Device
 from src.data.scan_result import ScanResult
 from src.util.logger import Logger
@@ -34,7 +35,16 @@ def check_hostname_is_none(hostname: str | None) -> str:
 
 def build_ip_message(device: Device) -> str:
     formatted_ip_addr = device.ip_addr + " " * (3 - len(device.ip_addr.split(".")[3]))
-    return f" 🛰️ [bold magenta] Found ip address: [/bold magenta][bold cyan]{formatted_ip_addr}[/bold cyan] "
+    return (
+        TyperOutputBuilder()
+        .add(" 🛰️ ")
+        .apply_bold_magenta()
+        .add(" Found ip address: ")
+        .clear_formatting()
+        .apply_bold_cyan()
+        .add(f"{formatted_ip_addr} ")
+        .build()
+    )
 
 
 def build_mac_addr_message(device: Device) -> str | None:
@@ -45,7 +55,15 @@ def build_mac_addr_message(device: Device) -> str | None:
     :return: string containing the mac address message
     """
     if device.mac_addr is not None:
-        return f"[bold magenta]and mac address: [/bold magenta][bold cyan]{device.mac_addr}[/bold cyan] "
+        return (
+            TyperOutputBuilder()
+            .apply_bold_magenta()
+            .add("add mac address: ")
+            .clear_formatting()
+            .apply_bold_cyan()
+            .add(f"{device.mac_addr} ")
+            .build()
+        )
 
 
 def get_ip_and_mac_message(device: Device) -> str:
@@ -57,13 +75,30 @@ def get_ip_and_mac_message(device: Device) -> str:
     # Warning: The spacing is extremely finicky. Change at your own risk.
     mac_addr_message: str = build_mac_addr_message(device)
     if mac_addr_message:
+        # return (
+        #     build_ip_message(device) + mac_addr_message + f"[bold magenta]for hostname:[/bold magenta] "
+        #     f"[bold cyan]{check_hostname_is_none(device.hostname)}[/bold cyan]"
+        # )
         return (
-            build_ip_message(device) + mac_addr_message + f"[bold magenta]for hostname:[/bold magenta] "
-            f"[bold cyan]{check_hostname_is_none(device.hostname)}[/bold cyan]"
+            TyperOutputBuilder()
+            .add(build_ip_message(device))
+            .add(mac_addr_message)
+            .apply_bold_magenta()
+            .add("for hostname: ")
+            .clear_formatting()
+            .apply_bold_cyan()
+            .add(check_hostname_is_none(device.hostname))
+            .build()
         )
     return (
-        build_ip_message(device) + f"[bold magenta]for hostname:[/bold magenta]"
-        f"[bold cyan] {check_hostname_is_none(device.hostname)}[/bold cyan]"
+        TyperOutputBuilder()
+        .add(build_ip_message(device))
+        .apply_bold_magenta()
+        .add("for hostname:")
+        .clear_formatting()
+        .apply_bold_cyan()
+        .add(check_hostname_is_none(device.hostname))
+        .build()
     )
 
 
@@ -84,9 +119,16 @@ def get_unique_devices_message(devices: list[Device]) -> str:
     :return: the str message to be printed
     """
     return (
-        f"[bold magenta] ✔️ Scan suggests that you have: [/bold magenta]"
-        f"[bold cyan]{get_number_of_unique_devices(devices)}[/bold cyan] "
-        f"[bold magenta]unique devices on the network. [/bold magenta]"
+        TyperOutputBuilder()
+        .apply_bold_magenta()
+        .add(" ✔️ Scan suggests that you have: ")
+        .clear_formatting()
+        .apply_bold_cyan()
+        .add(get_number_of_unique_devices(devices))
+        .clear_formatting()
+        .apply_bold_magenta()
+        .add(" unique devices on the network. ")
+        .build()
     )
 
 
@@ -99,6 +141,20 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
     hosts_up: int = scan_result.get_hosts_up_from_runstats() - 1
     total_hosts_scanned: str = scan_result.get_total_hosts_from_runstats()
     return (
-        f"[bold magenta] ✔️ It also found [bold cyan]{hosts_up}[/bold cyan] hosts up after scanning a total of "
-        f"[bold cyan]{total_hosts_scanned}[/bold cyan] hosts[/bold magenta]"
+        TyperOutputBuilder()
+        .apply_bold_magenta()
+        .add(" ✔️ It also found ")
+        .clear_formatting()
+        .apply_bold_cyan()
+        .add(hosts_up)
+        .clear_formatting()
+        .apply_bold_magenta()
+        .add(" hosts up after scanning a total of ")
+        .clear_formatting()
+        .apply_bold_cyan()
+        .add(total_hosts_scanned)
+        .clear_formatting()
+        .apply_bold_magenta()
+        .add(" hosts")
+        .build()
     )
