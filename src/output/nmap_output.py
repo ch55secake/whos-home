@@ -16,11 +16,23 @@ def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
     rich.print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))
 
 
+def check_hostname_is_none(hostname: str | None) -> str:
+    """
+    Check if the hostname is None for all devices
+    :param devices: list of devices to check
+    :return: the str message to be printed
+    """
+    if isinstance(hostname, str):
+        return hostname
+    return "(Unknown)"
+
+
 def build_ip_message(device: Device) -> str:
+    device.ip_addr += " " * (3 - len(device.ip_addr.split(".")[3]))
     return f" 🛰️ [bold magenta] Found ip address: [/bold magenta][bold cyan]{device.ip_addr}[/bold cyan] "
 
 
-def build_mac_addr_message(device: Device) -> str:
+def build_mac_addr_message(device: Device) -> str | None:
     """
     For a mac address there is a chance it's not present in the device, depending on if the user runs the command with
     sudo or not hence the need for the check
@@ -28,7 +40,7 @@ def build_mac_addr_message(device: Device) -> str:
     :return: string containing the mac address message
     """
     if device.mac_addr is not None:
-        return f"[bold magenta]and mac address:[/bold magenta] [bold cyan]{device.mac_addr}[/bold cyan] "
+        return f"[bold magenta]and mac address: [/bold magenta][bold cyan]{device.mac_addr}[/bold cyan] "
 
 
 def get_ip_and_mac_message(device: Device) -> str:
@@ -37,15 +49,16 @@ def get_ip_and_mac_message(device: Device) -> str:
     :param device: the device being iterated over
     :return: the str message to be printed
     """
+    # Warning: The spacing is extremely finicky. Change at your own risk.
     mac_addr_message: str = build_mac_addr_message(device)
     if mac_addr_message:
         return (
             build_ip_message(device) + mac_addr_message + f"[bold magenta]for hostname:[/bold magenta] "
-            f"[bold cyan]{device.hostname}[/bold cyan]"
+            f"[bold cyan]{check_hostname_is_none(device.hostname)}[/bold cyan]"
         )
     return (
-        build_ip_message(device) + f"[bold magenta]for hostname:[/bold magenta] "
-        f"[bold cyan]{device.hostname}[/bold cyan]"
+        build_ip_message(device) + f"[bold magenta]for hostname:[/bold magenta]"
+        f"[bold cyan] {check_hostname_is_none(device.hostname)}[/bold cyan]"
     )
 
 
@@ -55,7 +68,7 @@ def get_number_of_unique_devices(devices: list[Device]) -> int:
     :param devices: all devices passed in from the list
     :return: number of unique devices in the list
     """
-    unique_hostnames: set = {device.hostname for device in devices}
+    unique_hostnames: set = {device.hostname for device in devices if device.hostname is not None}
     return len(unique_hostnames)
 
 
@@ -78,7 +91,7 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
     :param scan_result: scan_result that has the run stats on it
     :return: the str message to be printed
     """
-    hosts_up: str = scan_result.get_hosts_up_from_runstats()
+    hosts_up: int = scan_result.get_hosts_up_from_runstats() - 1
     total_hosts_scanned: str = scan_result.get_total_hosts_from_runstats()
     return (
         f"[bold magenta] ✔️ It also found [bold cyan]{hosts_up}[/bold cyan] hosts up after scanning a total of "

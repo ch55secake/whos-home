@@ -15,12 +15,12 @@ class ScanResult:
     run_stats: OrderedDict[str, Any]
     hosts: list[dict]
 
-    def get_hosts_up_from_runstats(self) -> str:
+    def get_hosts_up_from_runstats(self) -> int:
         """
         Pull host info of the run stats
         :return: number of hosts up as string
         """
-        return self.run_stats["hosts"]["@up"]
+        return int(self.run_stats["hosts"]["@up"])
 
     def get_total_hosts_from_runstats(self) -> str:
         """
@@ -29,7 +29,7 @@ class ScanResult:
         """
         return self.run_stats["hosts"]["@total"]
 
-    def get_address(self, i, address_type: str) -> str:
+    def get_address(self, i, address_type: str) -> Any | None:
         """
         Get the address from the scan result based on type
         :return: The address
@@ -42,11 +42,13 @@ class ScanResult:
             if address["@addrtype"] == address_type:
                 return address["@addr"]
 
-    def get_hostname(self, i: int) -> str:
+    def get_hostname(self, i: int) -> Any | None:
         """
         Get the hostname from the scan result
         :return: The hostname
         """
+        if self.hosts[i].get("hostnames") is None:
+            return None
         return self.hosts[i]["hostnames"]["hostname"]["@name"]
 
     def get_devices(self) -> list[Device]:

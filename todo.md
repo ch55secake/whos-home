@@ -1,5 +1,8 @@
 ## Todo
 
+- BUG FIX: when there is only one found ip, the ScanResult hosts variable is not a list as intended. It is instead a dict.
+
+
 - add markdown table option for output (disabled by default)
 - fix os scanning
 - Be able to scan multiple ranges
