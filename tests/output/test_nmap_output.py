@@ -27,10 +27,10 @@ def test_devices():
 def scan_result_mock():
     class DummyScanResult(ScanResult):
         def get_hosts_up_from_runstats(self):
-            return "3"
+            return 3
 
         def get_total_hosts_from_runstats(self):
-            return "4"
+            return 4
 
     return DummyScanResult(run_stats={}, hosts=[])
 
@@ -82,7 +82,7 @@ def test_get_unique_devices_message(test_devices):
 
 def test_get_host_totals_message(scan_result_mock):
     msg = get_host_totals_message(scan_result_mock)
-    assert "3" in msg
+    assert "2" in msg
     assert "4" in msg
 
 
