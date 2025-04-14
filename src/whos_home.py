@@ -20,7 +20,7 @@ app: t.Typer = t.Typer()
     "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
     short_help="Scan for details about your network",
 )
-def now(
+def main(
     host: Annotated[str, t.Argument(help="The host that you want to scan against.")],
     cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
     schedule: Annotated[
@@ -75,13 +75,5 @@ def callback() -> None:
     """
 
 
-def main() -> None:
-    """
-    Entrypoint hack for poetry builds
-    :return: nothing starts the app
-    """
-    app()
-
-
 if __name__ == "__main__":
-    main()
+    t.run(main)
