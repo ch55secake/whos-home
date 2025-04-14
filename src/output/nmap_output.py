@@ -18,8 +18,8 @@ def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
 
 def check_hostname_is_none(hostname: str | None) -> str:
     """
-    Check if the hostname is None for all devices
-    :param devices: list of devices to check
+    Check if the provided hostname is None and return a default message if it is
+    :param hostname: the hostname to check
     :return: the str message to be printed
     """
     if isinstance(hostname, str):
