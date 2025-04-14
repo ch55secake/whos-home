@@ -64,12 +64,12 @@ def get_ip_and_mac_message(device: Device) -> str:
 
 def get_number_of_unique_devices(devices: list[Device]) -> int:
     """
-    Get the number of unique devices based on the hostname
+    Get the number of unique devices based on the ip addresses
     :param devices: all devices passed in from the list
     :return: number of unique devices in the list
     """
-    unique_hostnames: set = {device.hostname for device in devices if device.hostname is not None}
-    return len(unique_hostnames)
+    unique_devices: set[str] = {device.ip_addr for device in devices if device.ip_addr is not None}
+    return len(unique_devices)
 
 
 def get_unique_devices_message(devices: list[Device]) -> str:
