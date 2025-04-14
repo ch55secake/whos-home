@@ -28,8 +28,8 @@ def check_hostname_is_none(hostname: str | None) -> str:
 
 
 def build_ip_message(device: Device) -> str:
-    device.ip_addr += " " * (3 - len(device.ip_addr.split(".")[3]))
-    return f" 🛰️ [bold magenta] Found ip address: [/bold magenta][bold cyan]{device.ip_addr}[/bold cyan] "
+    formatted_ip_addr = device.ip_addr + " " * (3 - len(device.ip_addr.split(".")[3]))
+    return f" 🛰️ [bold magenta] Found ip address: [/bold magenta][bold cyan]{formatted_ip_addr}[/bold cyan] "
 
 
 def build_mac_addr_message(device: Device) -> str | None:
