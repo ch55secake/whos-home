@@ -10,8 +10,8 @@ def test_nmap_builder():
 
 
 def test_builder_adds_flags_correctly(test_nmap_builder):
-    test_nmap_builder.enable_aggressive().enable_service_discovery().enable_arp_ping()
-    command = test_nmap_builder.build()
+    test_nmap_builder.enable_aggressive().enable_service_scan().enable_arp_ping()
+    command = test_nmap_builder.build_host_discovery_command()
     assert "-A" in command
     assert "-sV" in command
     assert "-PR" in command
@@ -20,14 +20,14 @@ def test_builder_adds_flags_correctly(test_nmap_builder):
 
 def test_builder_sets_sudo():
     builder = NmapCommandBuilder("10.0.0.1", "16").set_sudo()
-    command = builder.build()
+    command = builder.build_host_discovery_command()
     assert command.startswith("sudo")
 
 
 def test_builder_disable_flag():
     builder = NmapCommandBuilder("127.0.0.1", "8")
     builder.enable_aggressive().disable_flag(AvailableNmapFlags.AGGRESSIVE)
-    command = builder.build()
+    command = builder.build_host_discovery_command()
     assert "-A" not in command
 
 

@@ -20,7 +20,7 @@ class AvailableNmapFlags(Enum):
 
     OS_DETECTION = "-O"
 
-    COMMON_PORTS = "-F"
+    TOP_1000_PORTS = "--top-ports=1000"
 
     FULL_PORT_SCAN = "-p-"
 
@@ -38,6 +38,8 @@ class AvailableNmapFlags(Enum):
 
     EXCLUDE_PORTS = "-sn"  # -sn: No port scan (only host discovery)
 
+    SKIP_HOST_DISCOVERY = "-Pn"  # -Pn: Skip host discovery (assume all hosts are up)
+
 
 class NmapCommandBuilder:
     def __init__(self, host: str, cidr: str, sudo: bool = False) -> None:
@@ -45,6 +47,14 @@ class NmapCommandBuilder:
         self.cidr = cidr
         self.sudo = sudo
         self.enabled_flags = set()
+
+    def disable_all_flags(self) -> NmapCommandBuilder:
+        """
+        Clear all flags
+        :return: NmapCommandBuilder
+        """
+        self.enabled_flags.clear()
+        return self
 
     def enable_flag(self, flag: AvailableNmapFlags) -> NmapCommandBuilder:
         self.enabled_flags.add(flag)
@@ -63,7 +73,7 @@ class NmapCommandBuilder:
     def enable_aggressive_timing(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.AGGRESSIVE_TIMING)
 
-    def enable_service_discovery(self) -> NmapCommandBuilder:
+    def enable_service_scan(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.SERVICE_SCAN)
 
     def enable_aggressive(self) -> NmapCommandBuilder:
@@ -72,6 +82,12 @@ class NmapCommandBuilder:
         :return: NmapCommandBuilder
         """
         return self.enable_flag(AvailableNmapFlags.AGGRESSIVE)
+
+    def enable_top_1000_ports(self) -> NmapCommandBuilder:
+        return self.enable_flag(AvailableNmapFlags.TOP_1000_PORTS)
+
+    def enable_skip_host_discovery(self) -> NmapCommandBuilder:
+        return self.enable_flag(AvailableNmapFlags.SKIP_HOST_DISCOVERY)
 
     def enable_os_detection(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.OS_DETECTION)
@@ -89,9 +105,15 @@ class NmapCommandBuilder:
         self.sudo = True
         return self
 
-    def build(self) -> str:
+    def build_host_discovery_command(self) -> str:
         flags = " ".join(flag.value for flag in self.enabled_flags)
         return f"{"sudo" if self.sudo else ""} nmap {flags} {self.host}/{self.cidr}"
+
+    def build_port_scan_command(self) -> str:
+        flags = " ".join(flag.value for flag in self.enabled_flags)
+        # cat targets.txt | xargs -I % -P 10 sudo nmap % -sV --top-ports=1000 -Pn -T5 %
+        return f"cat ip_list.txt | xargs -I % -P 20 {"sudo" if self.sudo else ""} nmap % {flags} %"
+        # f"#{"sudo" if self.sudo else ""} nmap {flags} {self.host}"
 
 
 class NmapExecutor:
@@ -119,12 +141,12 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            self.builder.enable_service_discovery()
+            self.builder.enable_service_scan()
             .enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_icmp_ping()
             .enable_xml_output()
-            .build()
+            .build_host_discovery_command()
         )
         return self.executor.execute(command)
 
@@ -134,46 +156,46 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = (
-            self.builder.enable_service_discovery()
+            self.builder.enable_service_scan()
             .enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_arp_ping()
             .enable_xml_output()
-            .build()
+            .build_host_discovery_command()
         )
         return self.executor.execute(command)
 
     def execute_arp_icmp_host_discovery(self) -> CommandResult:
         """
-        Execute an arp/icmp host discovery scan using nmap
+        Execute an arp and icmp host discovery scan using nmap
         :return: result of command execution
         """
         command: str = (
-            self.builder
-            # .enable_os_detection()
-            .enable_service_discovery()
-            .enable_exclude_ports()
-            # .enable_flag(AvailableNmapFlags.COMMON_PORTS)
+            self.builder.enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_icmp_ping()
             .enable_arp_ping()
             .enable_xml_output()
-            .build()
+            .build_host_discovery_command()
         )
         return self.executor.execute(command)
 
-    def execute_passive_scan(self) -> CommandResult:
+    def execute_general_port_scan(self) -> CommandResult:
         """
-        Executes a more passive host discovery scan using nmap
+        Executes a general port scan designed for the home network. Should come out as 'nmap -sV -T5 --top-ports=1000 -Pn -oX -'
         :return: result of command execution
         """
+        self.builder.disable_all_flags()
+        # cat targets.txt | xargs -I % -P 10 sudo nmap % -sV --top-ports=1000 -Pn -T5 %
         command: str = (
-            self.builder.enable_flag(AvailableNmapFlags.COMMON_PORTS)
-            .enable_flag(AvailableNmapFlags.SERVICE_SCAN)
-            .enable_flag(AvailableNmapFlags.NORMAL_TIMING)
+            self.builder.enable_top_1000_ports()
+            .enable_service_scan()
+            .enable_aggressive_timing()
+            .enable_skip_host_discovery()
             .enable_xml_output()
-            .build()
+            .build_port_scan_command()
         )
+        print(command)
         return self.executor.execute(command)
 
     def execute_aggressive_scan(self) -> CommandResult:
@@ -181,11 +203,14 @@ class NmapExecutor:
         Run an aggressive nmap port scan
         :return: result of command execution
         """
+        # This needs further consideration in the future - do we want/need an agro scan in a home network?
+        # Do we want even more options? do we want fully customisable port scans?
+        # For now this is a placeholder and is not used.
         command: str = (
-            self.builder.enable_flag(AvailableNmapFlags.COMMON_PORTS)
+            self.builder.enable_flag(AvailableNmapFlags.TOP_1000_PORTS)
             .enable_aggressive_timing()
             .enable_flag(AvailableNmapFlags.AGGRESSIVE)
             .enable_xml_output()
-            .build()
+            .build_host_discovery_command()
         )
         return self.executor.execute(command)

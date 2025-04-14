@@ -28,21 +28,31 @@ def now(
     only_icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = False,
     only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
     icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
+    port_scan: Annotated[bool, t.Option(help="Run a port scan against discovered hosts")] = False,
 ) -> None:
     """
     Discover hosts on the network using nmap
     """
     executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr)
-    result_from_scan: CommandResult = execute_scan_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
+    result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
+        only_arp, only_icmp, icmp_and_arp, executor
+    )
 
-    if result_from_scan.success:
-        parser: NmapOutputParser = NmapOutputParser(result_from_scan)
+    if result_from_host_discovery.success:
+        parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
         outputted_scan_result: ScanResult = parser.create_scan_result()
         outputted_devices: list[Device] = outputted_scan_result.get_devices()
         format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
+        if port_scan:
+            # create text file with the ips
+            with open("ip_list.txt", "w") as file:
+                for device in outputted_devices:
+                    file.write(f"{device.ip_addr}\n")
+            # run xargs with that text file
+            executor.execute_general_port_scan()
 
 
-def execute_scan_based_on_flag(
+def execute_host_discovery_based_on_flag(
     only_arp: bool, only_icmp: bool, icmp_and_arp: bool, executor: NmapExecutor
 ) -> CommandResult:
     """
