@@ -34,12 +34,9 @@ def build_ip_message(device: Device) -> str:
     formatted_ip_addr = device.ip_addr + " " * (3 - len(device.ip_addr.split(".")[3]))
     return (
         TyperOutputBuilder()
-        .add(" 🛰️ ")
-        .apply_bold_magenta()
-        .add(" Found ip address: ")
-        .clear_formatting()
-        .apply_bold_cyan()
-        .add(f"{formatted_ip_addr} ")
+        .add_satellite()
+        .apply_bold_magenta(message=" Found ip address: ")
+        .apply_bold_cyan(message=f"{formatted_ip_addr} ")
         .build()
     )
 
@@ -54,11 +51,8 @@ def build_mac_addr_message(device: Device) -> str | None:
     if device.mac_addr is not None:
         return (
             TyperOutputBuilder()
-            .apply_bold_magenta()
-            .add("add mac address: ")
-            .clear_formatting()
-            .apply_bold_cyan()
-            .add(f"{device.mac_addr} ")
+            .apply_bold_magenta(message="add mac address: ")
+            .apply_bold_cyan(message=f"{device.mac_addr} ")
             .build()
         )
 
@@ -72,29 +66,19 @@ def get_ip_and_mac_message(device: Device) -> str:
     # Warning: The spacing is extremely finicky. Change at your own risk.
     mac_addr_message: str = build_mac_addr_message(device)
     if mac_addr_message:
-        # return (
-        #     build_ip_message(device) + mac_addr_message + f"[bold magenta]for hostname:[/bold magenta] "
-        #     f"[bold cyan]{check_hostname_is_none(device.hostname)}[/bold cyan]"
-        # )
         return (
             TyperOutputBuilder()
             .add(build_ip_message(device))
             .add(mac_addr_message)
-            .apply_bold_magenta()
-            .add("for hostname: ")
-            .clear_formatting()
-            .apply_bold_cyan()
-            .add(check_hostname_is_none(device.hostname))
+            .apply_bold_magenta(message="for hostname: ")
+            .apply_bold_cyan(message=check_hostname_is_none(device.hostname))
             .build()
         )
     return (
         TyperOutputBuilder()
         .add(build_ip_message(device))
-        .apply_bold_magenta()
-        .add("for hostname:")
-        .clear_formatting()
-        .apply_bold_cyan()
-        .add(check_hostname_is_none(device.hostname))
+        .apply_bold_magenta(message="for hostname:")
+        .apply_bold_cyan(message=check_hostname_is_none(device.hostname))
         .build()
     )
 
@@ -117,14 +101,10 @@ def get_unique_devices_message(devices: list[Device]) -> str:
     """
     return (
         TyperOutputBuilder()
-        .apply_bold_magenta()
-        .add(" ✔️ Scan suggests that you have: ")
-        .clear_formatting()
-        .apply_bold_cyan()
-        .add(get_number_of_unique_devices(devices))
-        .clear_formatting()
-        .apply_bold_magenta()
-        .add(" unique devices on the network. ")
+        .add_check_mark()
+        .apply_bold_magenta(message="Scan suggests that you have: ")
+        .apply_bold_cyan(message=get_number_of_unique_devices(devices))
+        .apply_bold_magenta(message=" unique devices on the network. ")
         .build()
     )
 
@@ -139,19 +119,11 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
     total_hosts_scanned: str = scan_result.get_total_hosts_from_runstats()
     return (
         TyperOutputBuilder()
-        .apply_bold_magenta()
-        .add(" ✔️ It also found ")
-        .clear_formatting()
-        .apply_bold_cyan()
-        .add(hosts_up)
-        .clear_formatting()
-        .apply_bold_magenta()
-        .add(" hosts up after scanning a total of ")
-        .clear_formatting()
-        .apply_bold_cyan()
-        .add(total_hosts_scanned)
-        .clear_formatting()
-        .apply_bold_magenta()
-        .add(" hosts")
+        .add_check_mark()
+        .apply_bold_magenta(message="It also found ")
+        .apply_bold_cyan(message=hosts_up)
+        .apply_bold_magenta(message=" hosts up after scanning a total of ")
+        .apply_bold_cyan(message=total_hosts_scanned)
+        .apply_bold_magenta(message=" hosts")
         .build()
     )
