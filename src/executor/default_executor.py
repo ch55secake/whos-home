@@ -1,12 +1,10 @@
 import datetime
-import logging
-import os
 import subprocess
 
 import rich
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from output.typer_output_builder import TyperOutputBuilder
+from src.output.typer_output_builder import TyperOutputBuilder
 from src.data.command_result import CommandResult
 from src.util.logger import Logger
 
