@@ -30,7 +30,7 @@ class DefaultExecutor:
         """
 
         Logger().debug(f"Executing command: {command} with timeout: {self.timeout} and privileged: {running_as_sudo()}")
-        if self.warn_about_sudo and not running_as_sudo():
+        if self.warn_about_sudo and not running_as_sudo() and "-PE" in command:
             rich.print(
                 TyperOutputBuilder()
                 .add_exclamation_mark()

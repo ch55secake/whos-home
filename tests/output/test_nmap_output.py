@@ -1,5 +1,6 @@
 import pytest
 
+from src.data.command_result import CommandResult
 from src.data.device import Device
 from src.data.scan_result import ScanResult
 from src.output.nmap_output import (
@@ -10,6 +11,7 @@ from src.output.nmap_output import (
     get_number_of_unique_devices,
     get_unique_devices_message,
     get_host_totals_message,
+    format_and_output_from_check,
 )
 
 
@@ -92,3 +94,33 @@ def test_format_and_output_prints_expected(test_devices, scan_result_mock, capsy
     assert "Found ip address" in captured.out
     assert "✔️ Scan suggests that you have" in captured.out
     assert "✔️ It also found" in captured.out
+
+
+def test_format_and_output_from_check_found_version(capsys):
+    result = CommandResult(
+        command="command",
+        success=True,
+        stderr="",
+        stdout="Nmap version 7.95",
+        return_code=0,
+    )
+
+    format_and_output_from_check(result)
+    captured = capsys.readouterr()
+
+    assert "7.95" in captured.out
+
+
+def test_format_and_output_from_check_not_found(capsys):
+    result = CommandResult(
+        command="command",
+        success=False,
+        stderr="",
+        stdout="",
+        return_code=0,
+    )
+
+    format_and_output_from_check(result)
+    captured = capsys.readouterr()
+
+    assert "ERROR" in captured.out
