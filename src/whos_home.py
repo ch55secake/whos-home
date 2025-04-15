@@ -7,7 +7,7 @@ from src.data.command_result import CommandResult
 from src.data.device import Device
 from src.data.scan_result import ScanResult
 from src.executor.nmap_executor import NmapExecutor
-from src.output.nmap_output import format_and_output
+from src.output.nmap_output import format_and_output, format_and_output_from_check
 from src.parser.nmap_output_parser import NmapOutputParser
 from src.util.logger import Logger
 
@@ -31,6 +31,7 @@ def main(
     only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
     icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
     verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
+    check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
     timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
 ) -> None:
     """
@@ -41,6 +42,10 @@ def main(
         Logger().enable()
 
     executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
+    if check:
+        results_from_check: CommandResult = executor.execute_version_command()
+        format_and_output_from_check(command_result=results_from_check)
+
     result_from_scan: CommandResult = execute_scan_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
 
     if result_from_scan.success:

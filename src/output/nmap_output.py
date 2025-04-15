@@ -1,9 +1,43 @@
-import rich
+import re
 
-from src.output.typer_output_builder import TyperOutputBuilder
+from rich import print
+
+from src.data.command_result import CommandResult
 from src.data.device import Device
 from src.data.scan_result import ScanResult
+from src.output.typer_output_builder import TyperOutputBuilder
 from src.util.logger import Logger
+
+
+def format_and_output_from_check(command_result: CommandResult) -> None:
+    """
+    Check nmap version and if its person return a
+    :param command_result: result of command execution
+    :return: nothing just output message containing nmap version
+    """
+    Logger().debug("Checking for valid nmap installation.... ")
+    nmap_version_pattern: str = r"Nmap version \d+\.\d+"
+    version_found: re.Match[str] = re.search(nmap_version_pattern, command_result.stdout)
+
+    if version_found:
+        version = version_found.group().replace("Nmap version", "").strip()
+        output_message: str = (
+            TyperOutputBuilder()
+            .add_check_mark()
+            .apply_bold_magenta(f" Found nmap version: ")
+            .apply_bold_cyan(f"{version}")
+            .build()
+        )
+        print(output_message + "\n")
+    else:
+        print(
+            TyperOutputBuilder()
+            .apply_bold_red()
+            .add_exclamation_mark()
+            .add(" ERROR: no valid nmap version found, please check your current installation... ")
+            .build()
+        )
+        exit(1)
 
 
 def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
@@ -15,8 +49,8 @@ def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
     """
     Logger().debug("Looping through devices to output.... ")
     for device in devices:
-        rich.print(get_ip_and_mac_message(device))
-    rich.print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))
+        print(get_ip_and_mac_message(device))
+    print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))
 
 
 def check_hostname_is_none(hostname: str | None) -> str:
