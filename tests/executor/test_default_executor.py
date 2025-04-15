@@ -10,13 +10,14 @@ from src.data.command_result import CommandResult
 @patch("src.executor.default_executor.subprocess.run")
 def test_execute_warns_if_not_sudo(mock_subprocess, mock_sudo, capsys):
     mock_subprocess.return_value = MagicMock(
+        command="-PE",
         stdout="output",
         stderr="",
         returncode=0,
     )
 
     executor = DefaultExecutor(timeout=5, warn_about_sudo=True)
-    result = executor.execute("echo 'test'")
+    result = executor.execute("echo -PE 'test'")
 
     assert isinstance(result, CommandResult)
     assert result.stdout == "output"
