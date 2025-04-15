@@ -6,6 +6,7 @@ import subprocess
 import rich
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
+from output.typer_output_builder import TyperOutputBuilder
 from src.data.command_result import CommandResult
 from src.util.logger import Logger
 
@@ -32,9 +33,14 @@ class DefaultExecutor:
         Logger().debug(f"Executing command: {command} with timeout: {self.timeout} and privileged: {running_as_sudo()}")
         if self.warn_about_sudo and not running_as_sudo():
             rich.print(
-                "❗️[bold red] Warning:[/bold red][red] you are not root, this will make nmap fall back to a TCP scan "
-                "instead of ARP or ICMP. This also means that you will lose information such as the MAC address of "
-                "the device.[red] "
+                TyperOutputBuilder()
+                .add_exclamation_mark()
+                .apply_bold_red("Warning: ")
+                .apply_red()
+                .add(" you are not root, this will make nmap fall back to a TCP scan instead of ARP or ICMP."
+                     " This also means that you will lose information such as the MAC address of the device.")
+                .clear_formatting()
+                .build()
             )
 
         with Progress(
@@ -45,9 +51,13 @@ class DefaultExecutor:
             transient=True,
         ) as progress:
             progress.add_task(
-                description=f"[bold magenta] Running [bold cyan]{command}[/bold cyan] at: "
-                f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
-                f".......[/bold magenta]",
+                description=TyperOutputBuilder()
+                    .apply_bold_magenta(" Running: ")
+                    .apply_bold_cyan(command)
+                    .apply_bold_magenta(" at: ")
+                    .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
+                    .apply_bold_magenta(" .......")
+                    .build(),
                 total=None,
             )
             result = None
@@ -61,7 +71,9 @@ class DefaultExecutor:
                     timeout=self.timeout,
                 )
             except subprocess.CalledProcessError as e:
-                rich.print(f"[bold red] error occurred whilst executing nmap command, error: {e} [/bold red]")
+                rich.print(TyperOutputBuilder()
+                        .apply_bold_red(f" error occurred whilst executing nmap command, error: {e} ")
+                        .build())
 
             Logger().debug("Creating command result.... ")
             return CommandResult(
