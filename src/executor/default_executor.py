@@ -35,8 +35,10 @@ class DefaultExecutor:
                 .add_exclamation_mark()
                 .apply_bold_red("Warning: ")
                 .apply_red()
-                .add(" you are not root, this will make nmap fall back to a TCP scan instead of ARP or ICMP."
-                     " This also means that you will lose information such as the MAC address of the device.")
+                .add(
+                    " you are not root, this will make nmap fall back to a TCP scan instead of ARP or ICMP."
+                    " This also means that you will lose information such as the MAC address of the device."
+                )
                 .clear_formatting()
                 .build()
             )
@@ -50,12 +52,12 @@ class DefaultExecutor:
         ) as progress:
             progress.add_task(
                 description=TyperOutputBuilder()
-                    .apply_bold_magenta(" Running: ")
-                    .apply_bold_cyan(command)
-                    .apply_bold_magenta(" at: ")
-                    .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
-                    .apply_bold_magenta(" .......")
-                    .build(),
+                .apply_bold_magenta(" Running: ")
+                .apply_bold_cyan(command)
+                .apply_bold_magenta(" at: ")
+                .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
+                .apply_bold_magenta(" .......")
+                .build(),
                 total=None,
             )
             result = None
@@ -69,9 +71,11 @@ class DefaultExecutor:
                     timeout=self.timeout,
                 )
             except subprocess.CalledProcessError as e:
-                rich.print(TyperOutputBuilder()
-                        .apply_bold_red(f" error occurred whilst executing nmap command, error: {e} ")
-                        .build())
+                rich.print(
+                    TyperOutputBuilder()
+                    .apply_bold_red(f" error occurred whilst executing nmap command, error: {e} ")
+                    .build()
+                )
 
             Logger().debug("Creating command result.... ")
             return CommandResult(
