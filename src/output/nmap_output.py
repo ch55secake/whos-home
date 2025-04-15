@@ -37,7 +37,6 @@ def format_and_output_from_check(command_result: CommandResult) -> None:
             .add(" ERROR: no valid nmap version found, please check your current installation... ")
             .build()
         )
-        exit(1)
 
 
 def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
