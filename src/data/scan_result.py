@@ -48,6 +48,8 @@ class ScanResult:
         :return: The hostname
         """
         if isinstance(self.hosts, dict):
+            if self.hosts.get("hostnames") is None:
+                return None
             return self.hosts["hostnames"]["hostname"]["@name"]
 
         if self.hosts[i].get("hostnames") is None:

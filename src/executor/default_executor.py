@@ -23,7 +23,7 @@ class DefaultExecutor:
         self.timeout = timeout
         self.warn_about_sudo = warn_about_sudo
 
-    def execute(self, command: str) -> CommandResult:
+    def execute_host_discovery_command(self, command: str) -> CommandResult:
         """
         Executes a command and returns the result
         :return: command result or none depending on success
@@ -86,6 +86,48 @@ class DefaultExecutor:
                 return_code="" if not result else result.returncode,
                 success=("" if not result else result.returncode == 0),
             )
+
+    def execute_port_scan_command(self, command: str) -> CommandResult:
+        """
+
+        """
+
+        # no sudo warning needed mate
+        with Progress(
+            # Hack so I can have the spinner more nicely spaced
+            TextColumn(" "),
+            SpinnerColumn(style="magenta", speed=20),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
+        ) as progress:
+            progress.add_task(
+                description=f"[bold magenta] Running [bold cyan]{command}[/bold cyan] at: "
+                f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
+                f".......[/bold magenta]",
+                total=None,
+            )
+            result = None
+            try:
+                result = subprocess.run(
+                    command,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                    timeout=self.timeout,
+                )
+                print(result.stdout)
+            except subprocess.CalledProcessError as e:
+                rich.print(f"[bold red] error occurred whilst executing nmap command, error: {e} [/bold red]")
+
+            return CommandResult(
+                command=" ".join(command),
+                stdout="" if not result else result.stdout.strip(),
+                stderr="" if not result else result.stderr.strip(),
+                return_code="" if not result else result.returncode,
+                success=("" if not result else result.returncode == 0),
+            )
+
 
 
 def running_as_sudo() -> bool:

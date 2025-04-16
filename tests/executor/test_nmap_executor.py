@@ -36,14 +36,14 @@ def test_builder_disable_flag():
 def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
     mock_result = MagicMock()
     mock_result.stdout = "<xml>output</xml>"
-    mock_executor.return_value.execute.return_value = mock_result
+    mock_executor.return_value.execute_host_discovery_command.return_value = mock_result
 
     executor = NmapExecutor("192.168.1.0", "24")
     result = executor.execute_icmp_host_discovery()
 
     assert mock_executor.called
     assert result.stdout == "<xml>output</xml>"
-    cmd = mock_executor.return_value.execute.call_args[0][0]
+    cmd = mock_executor.return_value.execute_host_discovery_command.call_args[0][0]
     assert "-sV" in cmd
     assert "-sn" in cmd
     assert "-T5" in cmd
@@ -55,13 +55,13 @@ def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
 @patch("src.executor.nmap_executor.running_as_sudo", return_value=True)
 def test_execute_aggressive_scan(mock_sudo, mock_executor):
     mock_result = MagicMock()
-    mock_executor.return_value.execute.return_value = mock_result
+    mock_executor.return_value.execute_host_discovery_command.return_value = mock_result
 
     executor = NmapExecutor("10.0.0.1", "24")
     result = executor.execute_aggressive_scan()
 
     assert result == mock_result
-    cmd = mock_executor.return_value.execute.call_args[0][0]
+    cmd = mock_executor.return_value.execute_host_discovery_command.call_args[0][0]
     assert "-A" in cmd
     assert "-T5" in cmd
     assert "-F" in cmd

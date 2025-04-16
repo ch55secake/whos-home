@@ -124,7 +124,7 @@ class NmapExecutor:
     Uses DefaultExecutor to execute nmap commands
     """
 
-    def __init__(self, host: str, cidr: str, timeout: float = 60) -> None:
+    def __init__(self, host: str, cidr: str, timeout: float = 120) -> None:
         """
         Executor for nmap commands will provide network scan
         :param host: list of hosts to execute scans on
@@ -159,7 +159,7 @@ class NmapExecutor:
             .enable_xml_output()
             .build_host_discovery_command()
         )
-        return self.executor.execute(command)
+        return self.executor.execute_host_discovery_command(command)
 
     def execute_arp_host_discovery(self) -> CommandResult:
         """
@@ -174,7 +174,7 @@ class NmapExecutor:
             .enable_xml_output()
             .build_host_discovery_command()
         )
-        return self.executor.execute(command)
+        return self.executor.execute_host_discovery_command(command)
 
     def execute_arp_icmp_host_discovery(self) -> CommandResult:
         """
@@ -189,7 +189,7 @@ class NmapExecutor:
             .enable_xml_output()
             .build_host_discovery_command()
         )
-        return self.executor.execute(command)
+        return self.executor.execute_host_discovery_command(command)
 
     def execute_general_port_scan(self) -> CommandResult:
         """
@@ -207,7 +207,7 @@ class NmapExecutor:
             .build_port_scan_command()
         )
         print(command)
-        return self.executor.execute(command)
+        return self.executor.execute_port_scan_command(command)
 
     def execute_aggressive_scan(self) -> CommandResult:
         """
@@ -224,4 +224,4 @@ class NmapExecutor:
             .enable_xml_output()
             .build_host_discovery_command()
         )
-        return self.executor.execute(command)
+        return self.executor.execute_host_discovery_command(command)

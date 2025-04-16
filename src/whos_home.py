@@ -51,7 +51,7 @@ def main(
         results_from_check: CommandResult = executor.execute_version_command()
         format_and_output_from_check(command_result=results_from_check)
 
-    result_from_scan: CommandResult = execute_scan_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
+    result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
 
     if result_from_host_discovery.success:
         parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
@@ -64,8 +64,13 @@ def main(
                 for device in outputted_devices:
                     file.write(f"{device.ip_addr}\n")
             # run xargs with that text file
-            executor.execute_general_port_scan()
-
+            result_from_port_scan: CommandResult = executor.execute_general_port_scan() # no need for a method in this whos_home.py script as there are no flags. look at line 54
+            if result_from_port_scan.success:
+                parser: NmapOutputParser = NmapOutputParser(result_from_port_scan)
+                outputted_scan_result: ScanResult = parser.create_scan_result()
+                print(outputted_scan_result)
+                outputted_devices: list[Device] = outputted_scan_result.get_devices()
+                format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
 
 def execute_host_discovery_based_on_flag(
     only_arp: bool, only_icmp: bool, icmp_and_arp: bool, executor: NmapExecutor
