@@ -58,19 +58,16 @@ def main(
         outputted_scan_result: ScanResult = parser.create_scan_result()
         outputted_devices: list[Device] = outputted_scan_result.get_devices()
         format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
+
         if port_scan:
-            # create text file with the ips
             with open("ip_list.txt", "w") as file:
                 for device in outputted_devices:
                     file.write(f"{device.ip_addr}\n")
-            # run xargs with that text file
-            result_from_port_scan: CommandResult = executor.execute_general_port_scan() # no need for a method in this whos_home.py script as there are no flags. look at line 54
+
+            result_from_port_scan: CommandResult = executor.execute_general_port_scan() # no need for a method in this script as there are no flags. look at line 54
             if result_from_port_scan.success:
-                parser: NmapOutputParser = NmapOutputParser(result_from_port_scan)
-                outputted_scan_result: ScanResult = parser.create_scan_result()
-                print(outputted_scan_result)
-                outputted_devices: list[Device] = outputted_scan_result.get_devices()
-                format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
+                # at this point the output dir should be populated with xml files so we need to parse and output them.
+                print()
 
 def execute_host_discovery_based_on_flag(
     only_arp: bool, only_icmp: bool, icmp_and_arp: bool, executor: NmapExecutor

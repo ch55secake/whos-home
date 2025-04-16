@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 from enum import Enum
 
 from src.data.command_result import CommandResult
 from src.executor.default_executor import DefaultExecutor, running_as_sudo
+from src.util.logger import Logger
 
 
 class AvailableNmapFlags(Enum):
@@ -38,7 +40,9 @@ class AvailableNmapFlags(Enum):
 
     EXCLUDE_PORTS = "-sn"  # -sn: No port scan (only host discovery)
 
-    SKIP_HOST_DISCOVERY = "-Pn"  # -Pn: Skip host discovery (assume all hosts are up)
+    SKIP_HOST_DISCOVERY = "-Pn"  # -Pn: Skip host discovery (assume all hosts are up
+
+    OUTPUT_TO_XML_FILE = "-oX"
 
 
 class NmapCommandBuilder:
@@ -98,8 +102,11 @@ class NmapCommandBuilder:
     def enable_arp_ping(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.ARP_PING)
 
-    def enable_xml_output(self) -> NmapCommandBuilder:
+    def enable_xml_to_stdout(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.XML_OUTPUT_TO_STDOUT)
+
+    def enable_output_to_xml_file(self) -> NmapCommandBuilder:
+        return self.enable_flag(AvailableNmapFlags.OUTPUT_TO_XML_FILE)
 
     def set_sudo(self) -> NmapCommandBuilder:
         self.sudo = True
@@ -114,9 +121,10 @@ class NmapCommandBuilder:
 
     def build_port_scan_command(self) -> str:
         flags = " ".join(flag.value for flag in self.enabled_flags)
-        # cat targets.txt | xargs -I % -P 10 sudo nmap % -sV --top-ports=1000 -Pn -T5 %
-        return f"cat ip_list.txt | xargs -I % -P 20 {"sudo" if self.sudo else ""} nmap % {flags} %"
-        # f"#{"sudo" if self.sudo else ""} nmap {flags} {self.host}"
+        os.makedirs('output', exist_ok=True)  # move this somewhere else if you want
+
+        return (f"cat ip_list.txt | xargs -I % -P 20 {"sudo " if self.sudo else ""}nmap % {flags} "
+                f"{AvailableNmapFlags.OUTPUT_TO_XML_FILE.value} output/nmap-general-port-scan-%.xml")
 
 
 class NmapExecutor:
@@ -156,7 +164,7 @@ class NmapExecutor:
             .enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_icmp_ping()
-            .enable_xml_output()
+            .enable_xml_to_stdout()
             .build_host_discovery_command()
         )
         return self.executor.execute_host_discovery_command(command)
@@ -171,7 +179,7 @@ class NmapExecutor:
             .enable_exclude_ports()
             .enable_aggressive_timing()
             .enable_arp_ping()
-            .enable_xml_output()
+            .enable_xml_to_stdout()
             .build_host_discovery_command()
         )
         return self.executor.execute_host_discovery_command(command)
@@ -186,7 +194,7 @@ class NmapExecutor:
             .enable_aggressive_timing()
             .enable_icmp_ping()
             .enable_arp_ping()
-            .enable_xml_output()
+            .enable_xml_to_stdout()
             .build_host_discovery_command()
         )
         return self.executor.execute_host_discovery_command(command)
@@ -203,10 +211,9 @@ class NmapExecutor:
             .enable_service_scan()
             .enable_aggressive_timing()
             .enable_skip_host_discovery()
-            .enable_xml_output()
             .build_port_scan_command()
         )
-        print(command)
+        Logger().debug(f"Running following command: {command}")
         return self.executor.execute_port_scan_command(command)
 
     def execute_aggressive_scan(self) -> CommandResult:
@@ -221,7 +228,7 @@ class NmapExecutor:
             self.builder.enable_flag(AvailableNmapFlags.TOP_1000_PORTS)
             .enable_aggressive_timing()
             .enable_flag(AvailableNmapFlags.AGGRESSIVE)
-            .enable_xml_output()
+            .enable_xml_to_stdout()
             .build_host_discovery_command()
         )
         return self.executor.execute_host_discovery_command(command)
