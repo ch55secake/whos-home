@@ -1,12 +1,12 @@
 import datetime
-import subprocess
 import os
+import subprocess
 
 import rich
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from src.output.typer_output_builder import TyperOutputBuilder
 from src.data.command_result import CommandResult
+from src.output.typer_output_builder import TyperOutputBuilder
 from src.util.logger import Logger
 
 
@@ -37,19 +37,19 @@ class DefaultExecutor:
                 .apply_bold_red("Warning: ")
                 .apply_red()
                 .add(
-                    " you are not root, this will make nmap fall back to a TCP scan instead of ARP or ICMP."
-                    " This also means that you will lose information such as the MAC address of the device."
+                    " you are not root, this will make nmap fall back to an ICMP ping sweep instead of ICMP and/or ARP."
+                    " This means that you may miss hosts on the network and may lose useful information such as the MAC address of the device."
                 )
                 .clear_formatting()
                 .build()
             )
 
         with Progress(
-            # Hack so I can have the spinner more nicely spaced
-            TextColumn(" "),
-            SpinnerColumn(style="magenta", speed=20),
-            TextColumn("[progress.description]{task.description}"),
-            transient=True,
+                # Hack so I can have the spinner more nicely spaced
+                TextColumn(" "),
+                SpinnerColumn(style="magenta", speed=20),
+                TextColumn("[progress.description]{task.description}"),
+                transient=True,
         ) as progress:
             progress.add_task(
                 description=TyperOutputBuilder()
@@ -91,19 +91,20 @@ class DefaultExecutor:
         """
 
         """
-
+        ips = open('ip_list.txt', 'r').read().splitlines()
+        Logger().debug(f"Running nmap scan on with timeout: {self.timeout} and privileged: {running_as_sudo()}")
         # no sudo warning needed mate
         with Progress(
-            # Hack so I can have the spinner more nicely spaced
-            TextColumn(" "),
-            SpinnerColumn(style="magenta", speed=20),
-            TextColumn("[progress.description]{task.description}"),
-            transient=True,
+                # Hack so I can have the spinner more nicely spaced
+                TextColumn(" "),
+                SpinnerColumn(style="magenta", speed=20),
+                TextColumn("[progress.description]{task.description}"),
+                transient=True,
         ) as progress:
             progress.add_task(
                 description=f"[bold magenta] Running [bold cyan]{command}[/bold cyan] at: "
-                f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
-                f".......[/bold magenta]",
+                            f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
+                            f".......[/bold magenta]",
                 total=None,
             )
             result = None
@@ -116,7 +117,6 @@ class DefaultExecutor:
                     check=True,
                     timeout=self.timeout,
                 )
-                print(result.stdout)
             except subprocess.CalledProcessError as e:
                 rich.print(f"[bold red] error occurred whilst executing nmap command, error: {e} [/bold red]")
 
@@ -127,7 +127,6 @@ class DefaultExecutor:
                 return_code="" if not result else result.returncode,
                 success=("" if not result else result.returncode == 0),
             )
-
 
 
 def running_as_sudo() -> bool:

@@ -20,7 +20,7 @@ class Logger:
     def __init__(self) -> None:
         self.__logger = logging.Logger("whos-home")
 
-        formatter: logging.Formatter = logging.Formatter("[%(asctime)s - %(name)s]: %(message)s", datefmt="%H:%M:%S")
+        formatter: logging.Formatter = logging.Formatter("\n[%(asctime)s - %(name)s]: %(message)s", datefmt="%H:%M:%S")
 
         self.__logger.setLevel(logging.DEBUG)
         self.__logger.propagate = False

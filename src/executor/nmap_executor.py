@@ -5,7 +5,6 @@ from enum import Enum
 
 from src.data.command_result import CommandResult
 from src.executor.default_executor import DefaultExecutor, running_as_sudo
-from src.util.logger import Logger
 
 
 class AvailableNmapFlags(Enum):
@@ -121,7 +120,11 @@ class NmapCommandBuilder:
 
     def build_port_scan_command(self) -> str:
         flags = " ".join(flag.value for flag in self.enabled_flags)
-        os.makedirs('output', exist_ok=True)  # move this somewhere else if you want
+        os.makedirs('output', exist_ok=True)  # move this somewhere else if you want - possibly into whos-home.py
+        for file in os.listdir('output'):
+            file_path = os.path.join('output', file)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
 
         return (f"cat ip_list.txt | xargs -I % -P 20 {"sudo " if self.sudo else ""}nmap % {flags} "
                 f"{AvailableNmapFlags.OUTPUT_TO_XML_FILE.value} output/nmap-general-port-scan-%.xml")
@@ -213,7 +216,6 @@ class NmapExecutor:
             .enable_skip_host_discovery()
             .build_port_scan_command()
         )
-        Logger().debug(f"Running following command: {command}")
         return self.executor.execute_port_scan_command(command)
 
     def execute_aggressive_scan(self) -> CommandResult:

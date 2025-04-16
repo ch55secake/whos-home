@@ -7,7 +7,7 @@ from rich import print_json
 
 from src.data.command_result import CommandResult
 from src.data.scan_result import ScanResult
-from src.parser.nmap_output_parser import NmapOutputParser
+from src.parser.nmap_output_parser import NmapHostDiscoveryOutputParser
 
 
 @pytest.fixture
@@ -30,8 +30,8 @@ def test_nmap_output_parser(fake_nmap_response):
         return_code=0,
     )
 
-    parser = NmapOutputParser(command_result=command_result)
-    dict_output_from_parser: OrderedDict[str, Any] = parser.parse()
+    parser = NmapHostDiscoveryOutputParser(command_result=command_result)
+    dict_output_from_parser: OrderedDict[str, Any] = parser.parse_host_discovery_xml_output()
     print_json(json.dumps(dict_output_from_parser, indent=2))
 
 
@@ -44,7 +44,7 @@ def test_nmap_output_parser_for_scan_result(fake_nmap_response):
         return_code=0,
     )
 
-    parser = NmapOutputParser(command_result=command_result)
-    actual_scan_result: ScanResult = parser.create_scan_result()
+    parser = NmapHostDiscoveryOutputParser(command_result=command_result)
+    actual_scan_result: ScanResult = parser.create_scan_result_for_host_discovery()
     assert actual_scan_result.hosts is not None
     assert actual_scan_result.run_stats is not None
