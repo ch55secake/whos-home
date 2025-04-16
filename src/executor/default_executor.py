@@ -45,11 +45,11 @@ class DefaultExecutor:
             )
 
         with Progress(
-                # Hack so I can have the spinner more nicely spaced
-                TextColumn(" "),
-                SpinnerColumn(style="magenta", speed=20),
-                TextColumn("[progress.description]{task.description}"),
-                transient=True,
+            # Hack so I can have the spinner more nicely spaced
+            TextColumn(" "),
+            SpinnerColumn(style="magenta", speed=20),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
         ) as progress:
             progress.add_task(
                 description=TyperOutputBuilder()
@@ -88,23 +88,21 @@ class DefaultExecutor:
             )
 
     def execute_port_scan_command(self, command: str) -> CommandResult:
-        """
-
-        """
-        ips = open('ip_list.txt', 'r').read().splitlines()
+        """ """
+        ips = open("ip_list.txt", "r").read().splitlines()
         Logger().debug(f"Running nmap scan on with timeout: {self.timeout} and privileged: {running_as_sudo()}")
         # no sudo warning needed mate
         with Progress(
-                # Hack so I can have the spinner more nicely spaced
-                TextColumn(" "),
-                SpinnerColumn(style="magenta", speed=20),
-                TextColumn("[progress.description]{task.description}"),
-                transient=True,
+            # Hack so I can have the spinner more nicely spaced
+            TextColumn(" "),
+            SpinnerColumn(style="magenta", speed=20),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
         ) as progress:
             progress.add_task(
                 description=f"[bold magenta] Running [bold cyan]{command}[/bold cyan] at: "
-                            f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
-                            f".......[/bold magenta]",
+                f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
+                f".......[/bold magenta]",
                 total=None,
             )
             result = None

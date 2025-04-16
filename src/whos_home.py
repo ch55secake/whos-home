@@ -18,24 +18,24 @@ app: t.Typer = t.Typer()
 
 @app.command(
     help="Scan a provided host to find the devices that are currently on the host that you provided, "
-         "will execute either a passive or aggressive scan depending on the option provided. You are also "
-         "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
+    "will execute either a passive or aggressive scan depending on the option provided. You are also "
+    "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
     short_help="Scan for details about your network",
 )
 def main(
-        host: Annotated[str, t.Argument(help="The host that you want to scan against.")],
-        cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
-        schedule: Annotated[
-            str, t.Option(help="Run scans on a schedule of any of these values: 5m, 15m, 30m, 45m, 1h")
-        ] = "",
-        host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = "",
-        only_icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = not running_as_sudo(),
-        only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
-        icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = running_as_sudo(),
-        port_scan: Annotated[bool, t.Option(help="Run a port scan against discovered hosts")] = False,
-        verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
-        check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
-        timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
+    host: Annotated[str, t.Argument(help="The host that you want to scan against.")],
+    cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
+    schedule: Annotated[
+        str, t.Option(help="Run scans on a schedule of any of these values: 5m, 15m, 30m, 45m, 1h")
+    ] = "",
+    host_range: Annotated[str, t.Option(help="Run scans against a range of IPs.")] = "",
+    only_icmp: Annotated[bool, t.Option(help="Run scans with just an ICMP packet")] = not running_as_sudo(),
+    only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
+    icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = running_as_sudo(),
+    port_scan: Annotated[bool, t.Option(help="Run a port scan against discovered hosts")] = False,
+    verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
+    check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
+    timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
 ) -> None:
     """
     Discover hosts on the network using nmap
@@ -65,22 +65,26 @@ def main(
                 for device in outputted_devices:
                     file.write(f"{device.ip_addr}\n")
 
-            result_from_port_scan: CommandResult = executor.execute_general_port_scan()  # no need for a method in this script as there are no flags. look at line 54
+            result_from_port_scan: CommandResult = (
+                executor.execute_general_port_scan()
+            )  # no need for a method in this script as there are no flags. look at line 54
 
             # someone needs to create a class or some other woke nonsense. I am genuinely too thick to
             # work it out and not break everything. this works for now
             if result_from_port_scan.success:
-                print(f'\nPort scan results:')
+                print(f"\nPort scan results:")
                 # at this point the output dir should be populated with xml files so we need to parse and output them.
                 for output_file in os.listdir("output"):
-                    host = xmltodict.parse(open(os.path.join("output", output_file), 'r').read()).get('nmaprun',
-                                                                                                      {}).get('host',
-                                                                                                              {})
+                    host = (
+                        xmltodict.parse(open(os.path.join("output", output_file), "r").read())
+                        .get("nmaprun", {})
+                        .get("host", {})
+                    )
                     ip = f"\n{host.get('address', {}).get('@addr', '(Unknown)')}"
-                    hostname = host.get('hostnames', {}).get('hostname', {}).get('@name', '(Unknown)')
+                    hostname = host.get("hostnames", {}).get("hostname", {}).get("@name", "(Unknown)")
                     print(f"{ip} {hostname}")
 
-                    open_ports: list | dict = host.get('ports', {}).get('port', [])
+                    open_ports: list | dict = host.get("ports", {}).get("port", [])
                     if not open_ports:
                         print(f"    No open ports found")
                     elif isinstance(open_ports, list):
@@ -96,7 +100,7 @@ def main(
 
 
 def execute_host_discovery_based_on_flag(
-        only_arp: bool, only_icmp: bool, icmp_and_arp: bool, executor: NmapExecutor
+    only_arp: bool, only_icmp: bool, icmp_and_arp: bool, executor: NmapExecutor
 ) -> CommandResult:
     """
     Decides which executor to invoke and executes the scan with that configuration
