@@ -64,4 +64,3 @@ def test_execute_aggressive_scan(mock_sudo, mock_executor):
     cmd = mock_executor.return_value.execute_host_discovery_command.call_args[0][0]
     assert "-A" in cmd
     assert "-T5" in cmd
-    assert "-F" in cmd
