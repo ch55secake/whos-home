@@ -69,8 +69,8 @@ def main(
                 executor.execute_general_port_scan()
             )  # no need for a method in this script as there are no flags. look at line 54
 
-            # someone needs to create a class or some other woke nonsense. I am genuinely too thick to
-            # work it out and not break everything. this works for now
+            # A more robust solution could involve creating a dedicated class or refactoring this logic.
+            # This implementation is functional for now but may need improvement in the future.
             if result_from_port_scan.success:
                 print(f"\nPort scan results:")
                 # at this point the output dir should be populated with xml files so we need to parse and output them.
