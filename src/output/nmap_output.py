@@ -1,7 +1,42 @@
-import rich
+import re
 
+from rich import print
+
+from src.data.command_result import CommandResult
 from src.data.device import Device
 from src.data.scan_result import ScanResult
+from src.output.typer_output_builder import TyperOutputBuilder
+from src.util.logger import Logger
+
+
+def format_and_output_from_check(command_result: CommandResult) -> None:
+    """
+    Check nmap version and if its person return a
+    :param command_result: result of command execution
+    :return: nothing just output message containing nmap version
+    """
+    Logger().debug("Checking for valid nmap installation.... ")
+    nmap_version_pattern: str = r"Nmap version \d+\.\d+"
+    version_found: re.Match[str] = re.search(nmap_version_pattern, command_result.stdout)
+
+    if version_found:
+        version = version_found.group().replace("Nmap version", "").strip()
+        output_message: str = (
+            TyperOutputBuilder()
+            .add_check_mark()
+            .apply_bold_magenta(f" Found nmap version: ")
+            .apply_bold_cyan(f"{version}")
+            .build()
+        )
+        print(output_message + "\n")
+    else:
+        print(
+            TyperOutputBuilder()
+            .apply_bold_red()
+            .add_exclamation_mark()
+            .add(" ERROR: no valid nmap version found, please check your current installation... ")
+            .build()
+        )
 
 
 def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
@@ -11,9 +46,10 @@ def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
     :param devices: set of devices to output
     :return: nothing, will just print
     """
+    Logger().debug("Looping through devices to output.... ")
     for device in devices:
-        rich.print(get_ip_and_mac_message(device))
-    rich.print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))
+        print(get_ip_and_mac_message(device))
+    print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))
 
 
 def check_hostname_is_none(hostname: str | None) -> str:
@@ -29,7 +65,13 @@ def check_hostname_is_none(hostname: str | None) -> str:
 
 def build_ip_message(device: Device) -> str:
     formatted_ip_addr = device.ip_addr + " " * (3 - len(device.ip_addr.split(".")[3]))
-    return f" 🛰️ [bold magenta] Found ip address: [/bold magenta][bold cyan]{formatted_ip_addr}[/bold cyan] "
+    return (
+        TyperOutputBuilder()
+        .add_satellite()
+        .apply_bold_magenta(message=" Found ip address: ")
+        .apply_bold_cyan(message=f"{formatted_ip_addr} ")
+        .build()
+    )
 
 
 def build_mac_addr_message(device: Device) -> str | None:
@@ -40,7 +82,12 @@ def build_mac_addr_message(device: Device) -> str | None:
     :return: string containing the mac address message
     """
     if device.mac_addr is not None:
-        return f"[bold magenta]and mac address: [/bold magenta][bold cyan]{device.mac_addr}[/bold cyan] "
+        return (
+            TyperOutputBuilder()
+            .apply_bold_magenta(message="add mac address: ")
+            .apply_bold_cyan(message=f"{device.mac_addr} ")
+            .build()
+        )
 
 
 def get_ip_and_mac_message(device: Device) -> str:
@@ -53,12 +100,19 @@ def get_ip_and_mac_message(device: Device) -> str:
     mac_addr_message: str = build_mac_addr_message(device)
     if mac_addr_message:
         return (
-            build_ip_message(device) + mac_addr_message + f"[bold magenta]for hostname:[/bold magenta] "
-            f"[bold cyan]{check_hostname_is_none(device.hostname)}[/bold cyan]"
+            TyperOutputBuilder()
+            .add(build_ip_message(device))
+            .add(mac_addr_message)
+            .apply_bold_magenta(message="for hostname: ")
+            .apply_bold_cyan(message=check_hostname_is_none(device.hostname))
+            .build()
         )
     return (
-        build_ip_message(device) + f"[bold magenta]for hostname:[/bold magenta]"
-        f"[bold cyan] {check_hostname_is_none(device.hostname)}[/bold cyan]"
+        TyperOutputBuilder()
+        .add(build_ip_message(device))
+        .apply_bold_magenta(message="for hostname:")
+        .apply_bold_cyan(message=check_hostname_is_none(device.hostname))
+        .build()
     )
 
 
@@ -79,9 +133,12 @@ def get_unique_devices_message(devices: list[Device]) -> str:
     :return: the str message to be printed
     """
     return (
-        f"[bold magenta] ✔️ Scan suggests that you have: [/bold magenta]"
-        f"[bold cyan]{get_number_of_unique_devices(devices)}[/bold cyan] "
-        f"[bold magenta]unique devices on the network. [/bold magenta]"
+        TyperOutputBuilder()
+        .add_check_mark()
+        .apply_bold_magenta(message="Scan suggests that you have: ")
+        .apply_bold_cyan(message=get_number_of_unique_devices(devices))
+        .apply_bold_magenta(message=" unique devices on the network. ")
+        .build()
     )
 
 
@@ -94,6 +151,12 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
     hosts_up: int = scan_result.get_hosts_up_from_runstats() - 1
     total_hosts_scanned: str = scan_result.get_total_hosts_from_runstats()
     return (
-        f"[bold magenta] ✔️ It also found [bold cyan]{hosts_up}[/bold cyan] hosts up after scanning a total of "
-        f"[bold cyan]{total_hosts_scanned}[/bold cyan] hosts[/bold magenta]"
+        TyperOutputBuilder()
+        .add_check_mark()
+        .apply_bold_magenta(message="It also found ")
+        .apply_bold_cyan(message=hosts_up)
+        .apply_bold_magenta(message=" hosts up after scanning a total of ")
+        .apply_bold_cyan(message=total_hosts_scanned)
+        .apply_bold_magenta(message=" hosts")
+        .build()
     )

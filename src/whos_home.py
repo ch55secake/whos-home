@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 
 import typer as t
@@ -6,8 +7,9 @@ from src.data.command_result import CommandResult
 from src.data.device import Device
 from src.data.scan_result import ScanResult
 from src.executor.nmap_executor import NmapExecutor
-from src.output.nmap_output import format_and_output
+from src.output.nmap_output import format_and_output, format_and_output_from_check
 from src.parser.nmap_output_parser import NmapOutputParser
+from src.util.logger import Logger
 
 app: t.Typer = t.Typer()
 
@@ -18,7 +20,7 @@ app: t.Typer = t.Typer()
     "able to provide a given CIDR that you want to scan across. The CIDR will default to 24.",
     short_help="Scan for details about your network",
 )
-def now(
+def main(
     host: Annotated[str, t.Argument(help="The host that you want to scan against.")],
     cidr: Annotated[str, t.Option(help="The CIDR of the host that you want to scan against.")] = "24",
     schedule: Annotated[
@@ -29,6 +31,9 @@ def now(
     only_arp: Annotated[bool, t.Option(help="Run scans with just an ARP packet")] = False,
     icmp_and_arp: Annotated[bool, t.Option(help="Run scans with just an ICMP and ARP packet")] = True,
     port_scan: Annotated[bool, t.Option(help="Run a port scan against discovered hosts")] = False,
+    verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
+    check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
+    timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
 ) -> None:
     """
     Discover hosts on the network using nmap
@@ -37,6 +42,16 @@ def now(
     result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
         only_arp, only_icmp, icmp_and_arp, executor
     )
+
+    if verbose:
+        Logger().enable()
+
+    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
+    if check:
+        results_from_check: CommandResult = executor.execute_version_command()
+        format_and_output_from_check(command_result=results_from_check)
+
+    result_from_scan: CommandResult = execute_scan_based_on_flag(only_arp, only_icmp, icmp_and_arp, executor)
 
     if result_from_host_discovery.success:
         parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
@@ -64,7 +79,9 @@ def execute_host_discovery_based_on_flag(
     :return: the command result after command execution
     """
     if only_arp and only_icmp or icmp_and_arp:
+        Logger().debug("Running nmap with both arp and icmp...")
         return executor.execute_arp_icmp_host_discovery()
+    Logger().debug(f"Running nmap with only {"arp" if only_arp else "icmp"}...")
     return executor.execute_arp_host_discovery() if only_arp else executor.execute_icmp_host_discovery()
 
 
@@ -75,13 +92,5 @@ def callback() -> None:
     """
 
 
-def main() -> None:
-    """
-    Entrypoint hack for poetry builds
-    :return: nothing starts the app
-    """
-    app()
-
-
 if __name__ == "__main__":
-    main()
+    t.run(main)

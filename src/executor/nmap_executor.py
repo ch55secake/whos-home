@@ -109,6 +109,9 @@ class NmapCommandBuilder:
         flags = " ".join(flag.value for flag in self.enabled_flags)
         return f"{"sudo" if self.sudo else ""} nmap {flags} {self.host}/{self.cidr}"
 
+    def build_version_command(self) -> str:
+        return f"{"sudo" if self.sudo else ""} nmap --version"
+
     def build_port_scan_command(self) -> str:
         flags = " ".join(flag.value for flag in self.enabled_flags)
         # cat targets.txt | xargs -I % -P 10 sudo nmap % -sV --top-ports=1000 -Pn -T5 %
@@ -134,6 +137,14 @@ class NmapExecutor:
         self.executor = DefaultExecutor(timeout=self.timeout)
         self.privileged = running_as_sudo()
         self.builder = NmapCommandBuilder(host, cidr, self.privileged)
+
+    def execute_version_command(self) -> CommandResult:
+        """
+        Executes a version command to check the nmap if the nmap installation is present
+        :return: result of command execution
+        """
+        command: str = self.builder.build_version_command()
+        return self.executor.execute(command)
 
     def execute_icmp_host_discovery(self) -> CommandResult:
         """
