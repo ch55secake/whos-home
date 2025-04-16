@@ -12,13 +12,13 @@ from src.util.logger import Logger
 
 class DefaultExecutor:
     """
-    Generic executor for any command, can be invoked by other more specific executors.
+    Generic executor for any command can be invoked by other more specific executors.
     """
 
     def __init__(self, timeout: float, warn_about_sudo: bool = True):
         """
         Creates a default command executor to be used by the other executors.
-        :param timeout: how long to wait before the subprocess times out.
+        :param timeout: How long to wait before the subprocess times out.
         """
         self.timeout = timeout
         self.warn_about_sudo = warn_about_sudo
@@ -130,6 +130,6 @@ class DefaultExecutor:
 def running_as_sudo() -> bool:
     """
     Detect if the user is running as sudo
-    :return: bool based on if user is sudo
+    :return: bool based on if the user is sudo
     """
     return os.getuid() == 0

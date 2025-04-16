@@ -157,7 +157,7 @@ class NmapExecutor:
         :return: result of command execution
         """
         command: str = self.builder.build_version_command()
-        return self.executor.execute(command)
+        return self.executor.execute_host_discovery_command(command)
 
     def execute_icmp_host_discovery(self) -> CommandResult:
         """

@@ -20,7 +20,7 @@ class Logger:
     def __init__(self) -> None:
         self.__logger = logging.Logger("whos-home")
 
-        formatter: logging.Formatter = logging.Formatter("\n[%(asctime)s - %(name)s]: %(message)s", datefmt="%H:%M:%S")
+        formatter: logging.Formatter = logging.Formatter("[%(asctime)s - %(name)s]: %(message)s", datefmt="%H:%M:%S")
 
         self.__logger.setLevel(logging.DEBUG)
         self.__logger.propagate = False
@@ -36,7 +36,7 @@ class Logger:
         """
         Log a debug message
         :param message: the message to log
-        :return: nothing, will log message
+        :return: nothing, will log a message
         """
         if self._is_verbose:
             self.__logger.debug(message)
