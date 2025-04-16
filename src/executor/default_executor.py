@@ -119,7 +119,7 @@ class DefaultExecutor:
                 rich.print(f"[bold red] error occurred whilst executing nmap command, error: {e} [/bold red]")
 
             return CommandResult(
-                command=" ".join(command),
+                command=command,
                 stdout="" if not result else result.stdout.strip(),
                 stderr="" if not result else result.stderr.strip(),
                 return_code="" if not result else result.returncode,
