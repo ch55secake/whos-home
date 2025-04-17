@@ -1,13 +1,19 @@
 import datetime
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
+from typing import Iterator, Callable
 
 import rich
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, TextColumn, SpinnerColumn, TaskID
 
 from src.data.command_result import CommandResult
+from src.data.executor_callback_events import ExecutorCallbackEvents
+
+# from src.output.nmap_output import async_callback
 from src.output.typer_output_builder import TyperOutputBuilder
 from src.util.logger import Logger
+from src.util.progress_service import ProgressService
 
 
 class DefaultExecutor:
@@ -23,13 +29,37 @@ class DefaultExecutor:
         self.timeout = timeout
         self.warn_about_sudo = warn_about_sudo
 
-    def execute_host_discovery_command(self, command: str) -> CommandResult:
+    def execute(self, command: str) -> CommandResult:
         """
         Executes a command and returns the result
         :return: command result or none depending on success
         """
 
-        Logger().debug(f"Executing command: {command} with timeout: {self.timeout} and privileged: {running_as_sudo()}")
+        self.output_sudo_warning(command)
+        result = None
+        try:
+            Logger().debug(
+                f"Executing command: {command} with timeout: {self.timeout} and privileged: {running_as_sudo()}"
+            )
+            result = subprocess.run(
+                command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=self.timeout,
+            )
+        except subprocess.CalledProcessError as e:
+            rich.print(
+                TyperOutputBuilder()
+                .apply_bold_red(f" error occurred whilst executing nmap command, error: {e} ")
+                .build()
+            )
+
+        Logger().debug("Creating command result.... ")
+        return CommandResult.create_command_result(result, command)
+
+    def output_sudo_warning(self, command):
         if self.warn_about_sudo and not running_as_sudo() and "-PE" in command:
             rich.print(
                 TyperOutputBuilder()
@@ -44,87 +74,52 @@ class DefaultExecutor:
                 .build()
             )
 
-        with Progress(
-            # Hack so I can have the spinner more nicely spaced
-            TextColumn(" "),
-            SpinnerColumn(style="magenta", speed=20),
-            TextColumn("[progress.description]{task.description}"),
-            transient=True,
-        ) as progress:
-            progress.add_task(
-                description=TyperOutputBuilder()
-                .apply_bold_magenta(" Running: ")
-                .apply_bold_cyan(command)
-                .apply_bold_magenta(" at: ")
-                .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
-                .apply_bold_magenta(" .......")
-                .build(),
-                total=None,
-            )
-            result = None
-            try:
-                result = subprocess.run(
-                    command,
-                    shell=True,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    timeout=self.timeout,
-                )
-            except subprocess.CalledProcessError as e:
-                rich.print(
-                    TyperOutputBuilder()
-                    .apply_bold_red(f" error occurred whilst executing nmap command, error: {e} ")
-                    .build()
-                )
+    def async_pooled_execute(self, commands: list[str], events: ExecutorCallbackEvents) -> list[CommandResult]:
+        """
+        Executes a list of commands asynchronously and in parallel using a
+        thread pool executor, ensuring that each command is executed in
+        conjugation with the provided event callbacks.
 
-            Logger().debug("Creating command result.... ")
-            return CommandResult(
-                command=" ".join(command),
-                stdout="" if not result else result.stdout.strip(),
-                stderr="" if not result else result.stderr.strip(),
-                return_code="" if not result else result.returncode,
-                success=("" if not result else result.returncode == 0),
-            )
+        This method helps to efficiently execute multiple commands concurrently
+        and return their results in a pooled manner. It also outputs any sudo
+        warning message for the first command in the list.
 
-    def execute_port_scan_command(self, command: str) -> CommandResult:
-        """ """
-        ips = open("ip_list.txt", "r").read().splitlines()
-        Logger().debug(f"Running nmap scan on with timeout: {self.timeout} and privileged: {running_as_sudo()}")
-        # no sudo warning needed mate
-        with Progress(
-            # Hack so I can have the spinner more nicely spaced
-            TextColumn(" "),
-            SpinnerColumn(style="magenta", speed=20),
-            TextColumn("[progress.description]{task.description}"),
-            transient=True,
-        ) as progress:
-            progress.add_task(
-                description=f"[bold magenta] Running [bold cyan]{command}[/bold cyan] at: "
-                f"[bold cyan]{datetime.datetime.now().time().strftime("%H:%M:%S")}[/bold cyan] "
-                f".......[/bold magenta]",
-                total=None,
-            )
-            result = None
-            try:
-                result = subprocess.run(
-                    command,
-                    shell=True,
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                    timeout=self.timeout,
+        :param commands: A list of commands that need to be executed asynchronously.
+        :param events: Events used as callbacks related to execution, implementing
+            relevant handling during processing.
+        :return: A list of results corresponding to the execution of each command.
+        :rtype: list[CommandResult]
+        """
+        self.output_sudo_warning(commands[0])
+        with ProgressService().progress:
+            with ThreadPoolExecutor(max_workers=20) as executor:
+                results: Iterator[CommandResult] = executor.map(
+                    lambda args: self.async_execute(*args), [(command, events) for command in commands]
                 )
-            except subprocess.CalledProcessError as e:
-                rich.print(f"[bold red] error occurred whilst executing nmap command, error: {e} [/bold red]")
+            return list(results)
 
-            return CommandResult(
-                command=command,
-                stdout="" if not result else result.stdout.strip(),
-                stderr="" if not result else result.stderr.strip(),
-                return_code="" if not result else result.returncode,
-                success=("" if not result else result.returncode == 0),
-            )
+    def async_execute(self, command: str, events: ExecutorCallbackEvents) -> CommandResult:
+        """
+        Executes a command asynchronously while handling pre-execution callbacks
+        and providing the execution result. This function delegates execution to
+        a synchronous execution method and utilizes provided callbacks to perform
+        additional actions before execution is completed.
+
+        :param command: The command string to be executed. This should be a valid
+            shell command or relevant executable instruction.
+        :type command: str
+        :param events: An instance containing callbacks for execution events.
+            Particularly, `pre_execution` is invoked before command execution to handle
+            required pre-execution logic.
+        :type events: ExecutorCallbackEvents
+        :return: A `CommandResult` instance containing execution data such as success
+            status, output, and error messages resulting from the executed command.
+        :rtype: CommandResult
+        """
+        task_id: TaskID = events.pre_execution(command)
+        command_result: CommandResult = self.execute(command)
+        events.post_execution(command_result, task_id)
+        return command_result
 
 
 def running_as_sudo() -> bool:
