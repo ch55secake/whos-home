@@ -18,10 +18,10 @@ from src.output.nmap_output import (
 @pytest.fixture
 def test_devices():
     return [
-        Device(ip_addr="192.168.0.1", mac_addr="00:11:22:33:44:55", hostname="router"),
-        Device(ip_addr="192.168.0.2", mac_addr=None, hostname="laptop"),
-        Device(ip_addr="192.168.0.3", mac_addr="AA:BB:CC:DD:EE:FF", hostname="phone"),
-        Device(ip_addr="192.168.0.4", mac_addr="11:22:33:44:55:66", hostname="router"),
+        Device(ip_addr="192.168.0.1", mac_addr="00:11:22:33:44:55", hostname="router", os=None, ports=None),
+        Device(ip_addr="192.168.0.2", mac_addr=None, hostname="laptop", os=None, ports=None),
+        Device(ip_addr="192.168.0.3", mac_addr="AA:BB:CC:DD:EE:FF", hostname="phone", os=None, ports=None),
+        Device(ip_addr="192.168.0.4", mac_addr="11:22:33:44:55:66", hostname="router", os=None, ports=None),
     ]
 
 
