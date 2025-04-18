@@ -38,25 +38,25 @@ def scan_result_mock():
 
 
 def test_build_ip_message():
-    device = Device(ip_addr="192.168.0.10", mac_addr=None, hostname="test-device")
+    device = Device(ip_addr="192.168.0.10", mac_addr=None, hostname="test-device", os=None, ports=None)
     msg = build_ip_message(device)
     assert "192.168.0.10" in msg
 
 
 def test_build_mac_addr_message_with_mac():
-    device = Device(ip_addr="x", mac_addr="AA:BB:CC", hostname="host")
+    device = Device(ip_addr="x", mac_addr="AA:BB:CC", hostname="host", os=None, ports=None)
     msg = build_mac_addr_message(device)
     assert "AA:BB:CC" in msg
 
 
 def test_build_mac_addr_message_without_mac():
-    device = Device(ip_addr="x", mac_addr=None, hostname="host")
+    device = Device(ip_addr="x", mac_addr=None, hostname="host", os=None, ports=None)
     msg = build_mac_addr_message(device)
     assert msg is None
 
 
 def test_get_ip_and_mac_message_with_mac():
-    device = Device(ip_addr="1.2.3.4", mac_addr="00:00:00", hostname="abc")
+    device = Device(ip_addr="1.2.3.4", mac_addr="00:00:00", hostname="abc", os=None, ports=None)
     msg = get_ip_and_mac_message(device)
     assert "1.2.3.4" in msg
     assert "00:00:00" in msg
@@ -64,7 +64,7 @@ def test_get_ip_and_mac_message_with_mac():
 
 
 def test_get_ip_and_mac_message_without_mac():
-    device = Device(ip_addr="1.2.3.4", mac_addr=None, hostname="abc")
+    device = Device(ip_addr="1.2.3.4", mac_addr=None, hostname="abc", os=None, ports=None)
     msg = get_ip_and_mac_message(device)
     assert "1.2.3.4" in msg
     assert "abc" in msg

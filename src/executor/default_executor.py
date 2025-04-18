@@ -1,5 +1,4 @@
 import os
-import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from typing import Iterator
@@ -9,8 +8,6 @@ from rich.progress import TaskID
 
 from src.data.command_result import CommandResult
 from src.data.executor_callback_events import ExecutorCallbackEvents
-
-# from src.output.nmap_output import async_callback
 from src.output.typer_output_builder import TyperOutputBuilder
 from src.util.logger import Logger
 from src.util.progress_service import ProgressService
