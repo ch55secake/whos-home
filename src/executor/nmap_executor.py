@@ -91,9 +91,8 @@ class NmapExecutor:
             .build()
         )
         with Progress(
-            # Hack so I can have the spinner more nicely spaced
             TextColumn(" "),
-            SpinnerColumn(style="magenta", speed=20),
+            SpinnerColumn(style="magenta", spinner_name="aesthetic"),
             TextColumn("[progress.description]{task.description}"),
             transient=True,
         ) as progress:
@@ -138,6 +137,7 @@ class NmapExecutor:
                 .enable_aggressive_timing()
                 .enable_skip_host_discovery()
                 .enable_os_detection()
+                .enable_xml_to_stdout()
                 .build_without_cidr(),
                 ips,
             )

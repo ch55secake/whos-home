@@ -1,8 +1,6 @@
-import datetime
 from typing import Annotated
 
 import typer as t
-from rich.progress import TaskID
 
 from src.data.command_result import CommandResult
 from src.data.device import Device
@@ -11,10 +9,8 @@ from src.data.scan_result import ScanResult
 from src.executor.default_executor import running_as_sudo
 from src.executor.nmap_executor import NmapExecutor
 from src.output.nmap_output import format_and_output, format_and_output_from_check
-from src.output.typer_output_builder import TyperOutputBuilder
-from src.parser.nmap_output_parser import NmapHostDiscoveryOutputParser
+from src.parser.nmap_output_parser import NmapOutputParser
 from src.util.logger import Logger
-from src.util.progress_service import ProgressService
 
 app: t.Typer = t.Typer()
 
@@ -57,8 +53,8 @@ def main(
         format_and_output_from_check(command_result=results_from_check)
 
     if result_from_host_discovery.success:
-        parser: NmapHostDiscoveryOutputParser = NmapHostDiscoveryOutputParser(result_from_host_discovery)
-        outputted_scan_result: ScanResult = parser.create_scan_result_for_host_discovery()
+        parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
+        outputted_scan_result: ScanResult = parser.create_scan_result()
         outputted_devices: list[Device] = outputted_scan_result.get_devices()
         format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
 
@@ -66,44 +62,12 @@ def main(
             Logger().debug("Beginning port scan....")
             ips: list[str] = [device.ip_addr for device in outputted_devices]
 
-            results_from_port_scan: list[CommandResult] = executor.execute_general_port_scan(
-                ips, ExecutorCallbackEvents(pre_execution_callback, post_execution_callback)
-            )  # no need for a method in this script as there are no flags. look at line 54
-
-            # A more robust solution could involve creating a dedicated class or refactoring this logic.
-            # This implementation is functional for now but may need improvement in the future.
-            # brother was that smoking that good good
-            for result in results_from_port_scan:
-                Logger().debug(result.stdout)
-                Logger().debug(result.stderr)
-                if result.success:
-                    Logger().debug(result.stdout)
-            # if result_from_port_scan.success:
-            #     print(f"\nPort scan results:")
-            #     # at this point the output dir should be populated with XML files, so we need to parse and output them.
-            #     for output_file in os.listdir("output"):
-            #         host = (
-            #             xmltodict.parse(open(os.path.join("output", output_file), "r").read())
-            #             .get("nmaprun", {})
-            #             .get("host", {})
-            #         )
-            #         ip = f"\n{host.get('address', {}).get('@addr', '(Unknown)')}"
-            #         hostname = host.get("hostnames", {}).get("hostname", {}).get("@name", "(Unknown)")
-            #         print(f"{ip} {hostname}")
-            #
-            #         open_ports: list | dict = host.get("ports", {}).get("port", [])
-            #         if not open_ports:
-            #             print(f"    No open ports found")
-            #         elif isinstance(open_ports, list):
-            #             for port in open_ports:
-            #                 # ps, because we are using -sV, we can access port.get('service'), which holds the port name, product and extrainfo.
-            #                 # We can also access @ostype here as well which will give a basic os guess of the target.
-            #                 # I havent implemented this because sometimes, each of these can be None and it would be a bit of a pain to check for each one.
-            #                 print(f"    Port {port.get('@portid')} is open")
-            #         else:  # for some reason open_ports is a dict when there is only 1 open port found on a host....
-            #             print(f"    Port {open_ports.get('@portid')} is open")
-
-            # hahahahah i just looked back at what ive written good luck.
+            executor.execute_general_port_scan(
+                ips,
+                ExecutorCallbackEvents(
+                    ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback
+                ),
+            )
 
 
 def execute_host_discovery_based_on_flag(
@@ -129,28 +93,6 @@ def callback() -> None:
     """
     🛰️ Curious about the devices connected to your network?
     """
-
-
-def pre_execution_callback(command: str) -> TaskID:
-    task: TaskID = ProgressService().progress.add_task(
-        description=TyperOutputBuilder()
-        .apply_bold_magenta(" Running: ")
-        .apply_bold_cyan(command)
-        .apply_bold_magenta(" at: ")
-        .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
-        .apply_bold_magenta(" .......")
-        .build()
-    )
-
-    Logger().debug(f"Creating progress with task_id: {task}")
-    return task
-
-
-def post_execution_callback(command_result: CommandResult, task_id: TaskID) -> None:
-    Logger().debug("Completing progress task....")
-    ProgressService().progress.update(task_id, completed=True, visible=False)
-
-    print(command_result.stdout)
 
 
 if __name__ == "__main__":

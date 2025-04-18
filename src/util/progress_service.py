@@ -17,7 +17,7 @@ class ProgressService:
             cls._instance.progress = Progress(
                 # Hack so I can have the spinner more nicely spaced
                 TextColumn(" "),
-                SpinnerColumn(style="magenta", speed=20),
+                SpinnerColumn(style="magenta", spinner_name="aesthetic"),
                 TextColumn("[progress.description]{task.description}"),
             )
         return cls._instance

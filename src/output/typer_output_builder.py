@@ -40,6 +40,9 @@ class TyperOutputBuilder:
     def add_satellite(self) -> TyperOutputBuilder:
         return self.add_emoji("🛰️")
 
+    def add_square(self) -> TyperOutputBuilder:
+        return self.add(" [+]")
+
     def add_check_mark(self) -> TyperOutputBuilder:
         return self.add_emoji("✔️")
 

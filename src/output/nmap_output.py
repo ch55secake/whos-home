@@ -42,14 +42,40 @@ def format_and_output_from_check(command_result: CommandResult) -> None:
 def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
     """
     Neatly outputs the devices it finds
-    :param scan_result: scan_result from nmap input
+    :param scan_result: scan_result from a nmap input
     :param devices: set of devices to output
     :return: nothing, will just print
     """
     Logger().debug("Looping through devices to output.... ")
+    print(get_result_summary_message())
     for device in devices:
         print(get_ip_and_mac_message(device))
-    print("\n" + get_unique_devices_message(devices) + "\n" + get_host_totals_message(scan_result))
+    print(
+        "\n"
+        + get_unique_devices_message(devices)
+        + "\n"
+        + get_host_totals_message(scan_result)
+        + "\n"
+        + build_post_scan_message()
+    )
+
+
+def format_and_output_from_port_scan(scan_result: ScanResult) -> None:
+    """
+    Format and output the port scan results; this will also include any OS information found
+    :param scan_result: result from the scan
+    :return: nothing only outputs to the user
+    """
+    Logger().debug("Outputting port scan results.... ")
+    print("\n".join(build_port_message(scan_result)) + "\n" + build_os_info_message(scan_result))
+
+
+def get_result_summary_message() -> str:
+    """
+    Output the summary message before printing any results from the scan
+    :return: nothing, only outputs to the user
+    """
+    return TyperOutputBuilder().add_satellite().apply_bold_magenta(message=" Hosts found on your network: ").build()
 
 
 def check_hostname_is_none(hostname: str | None) -> str:
@@ -64,14 +90,29 @@ def check_hostname_is_none(hostname: str | None) -> str:
 
 
 def build_ip_message(device: Device) -> str:
+    """
+    Build the ip message to be printed to the user
+    :param device: found from the scan
+    :return: string message to be printed to the user
+    """
     formatted_ip_addr = device.ip_addr + " " * (3 - len(device.ip_addr.split(".")[3]))
     return (
         TyperOutputBuilder()
-        .add_satellite()
+        .apply_bold_magenta()
+        .add_square()
+        .clear_formatting()
         .apply_bold_magenta(message=" Found ip address: ")
         .apply_bold_cyan(message=f"{formatted_ip_addr} ")
         .build()
     )
+
+
+def build_post_scan_message() -> str:
+    """
+    Build the post-scan message to be printed to the user
+    :return: str message to be printed to the user
+    """
+    return TyperOutputBuilder().apply_bold_magenta(message=" [~] Scan complete!").build()
 
 
 def build_mac_addr_message(device: Device) -> str | None:
@@ -111,7 +152,7 @@ def get_ip_and_mac_message(device: Device) -> str:
     return (
         TyperOutputBuilder()
         .add(build_ip_message(device))
-        .apply_bold_magenta(message="for hostname:")
+        .apply_bold_magenta(message="for hostname: ")
         .apply_bold_cyan(message=check_hostname_is_none(device.hostname))
         .build()
     )
@@ -149,7 +190,7 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
     :param scan_result: scan_result that has the run stats on it
     :return: the str message to be printed
     """
-    hosts_up: int = scan_result.get_hosts_up_from_runstats() - 1
+    hosts_up: int = scan_result.get_hosts_up_from_runstats()
     total_hosts_scanned: str = scan_result.get_total_hosts_from_runstats()
     return (
         TyperOutputBuilder()
@@ -159,5 +200,54 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
         .apply_bold_magenta(message=" hosts up after scanning a total of ")
         .apply_bold_cyan(message=total_hosts_scanned)
         .apply_bold_magenta(message=" hosts")
+        .build()
+    ) + "\n"
+
+
+def build_port_message(scan_result: ScanResult) -> list[str]:
+    """
+    Build the port message to be printed to the user requires iteration as there is sometimes a list of ports
+    :param scan_result: scan_result to get the device from and the ports from
+    :return: a list of str messages to be printed to the user
+    """
+    device_from_port_scan: Device = scan_result.get_device()
+    return [
+        TyperOutputBuilder()
+        .apply_bold_magenta()
+        .add_square()
+        .add(" Found ports: ")
+        .clear_formatting()
+        .apply_bold_cyan(message="{:<10}".format(f"{port.id}/{port.protocol}"))
+        .apply_bold_magenta(message=" for host: ")
+        .apply_bold_cyan(
+            message=f"{device_from_port_scan.ip_addr}({check_hostname_is_none(device_from_port_scan.hostname)})"
+        )
+        .build()
+        for port in device_from_port_scan.ports
+    ]
+
+
+def build_os_info_message(scan_result: ScanResult) -> str:
+    """
+    Build the os info message to be printed from the port scan results
+    :param scan_result: scan_result to get the device from and the os info from
+    :return: a message to be printed to the user
+    """
+    device_from_port_scan: Device = scan_result.get_device()
+    return (
+        TyperOutputBuilder()
+        .apply_bold_magenta()
+        .add_square()
+        .add(" Found OS information: ")
+        .clear_formatting()
+        .apply_bold_cyan(
+            message=f"{device_from_port_scan.os.name}/{device_from_port_scan.os.vendor}/{device_from_port_scan.os.family}"
+        )
+        .apply_bold_magenta(message=" for host: ")
+        .apply_bold_cyan(
+            message="{:<10}".format(
+                f"{device_from_port_scan.ip_addr}({check_hostname_is_none(device_from_port_scan.hostname)})"
+            )
+        )
         .build()
     )
