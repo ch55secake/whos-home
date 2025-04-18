@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from typing import Callable
 
 from rich.progress import Progress, TextColumn, SpinnerColumn
 
@@ -127,7 +126,6 @@ class NmapExecutor:
         :return: A list of `CommandResult` objects containing the results of the scan.
         :rtype: list[CommandResult]
         """
-        # nmap -sV -T5 --top-ports=1000 -Pn -oX -
         Logger().debug(f"Executing general port scan on {ips}")
         commands: list[str] = list(
             map(

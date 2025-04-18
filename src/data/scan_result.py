@@ -32,13 +32,14 @@ class ScanResult:
         os_info = self.get_os_info_for_host()
         if isinstance(os_info, list) and os_info:
             return os_info[0].get("@name", "(Unknown)")
-        elif isinstance(os_info, dict):
+        if isinstance(os_info, dict):
             return os_info.get("@name", "(Unknown)")
         return "(Unknown)"
 
     def get_os_vendor_to_family(self) -> Tuple[str, str]:
         """
-        Create a tuple of the vendor and family of the OS running on the host. Will default to (Unknown, Unknown) if not found.
+        Create a tuple of the vendor and family of the OS running on the host. Will default to (Unknown, Unknown)
+        if not found.
         :return:
         """
         os_info = self.get_os_info_for_host()
@@ -52,7 +53,7 @@ class ScanResult:
 
         if isinstance(osclass, list) and osclass:
             return osclass[0].get("@vendor", "(Unknown)"), osclass[0].get("@osfamily", "(Unknown)")
-        elif isinstance(osclass, dict):
+        if isinstance(osclass, dict):
             return osclass.get("@vendor", "(Unknown)"), osclass.get("@osfamily", "(Unknown)")
 
         return "(Unknown)", "(Unknown)"
@@ -173,7 +174,7 @@ class ScanResult:
         """
         try:
             return self.hosts.get("hostnames", {}).get("hostname", {}).get("@name", "(Unknown)")
-        except Exception:
+        except (AttributeError, TypeError):
             return "(Unknown)"
 
     def get_ipv4(self):
@@ -197,7 +198,7 @@ class ScanResult:
                 if addr.get("@addrtype") == "ipv4":
                     return str(addr.get("@addr"))
             return "(No IPv4)"
-        except Exception:
+        except (AttributeError, TypeError):
             return "(Error)"
 
     def get_ports(self):

@@ -1,11 +1,11 @@
-import datetime
+import os
 import os
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
-from typing import Iterator, Callable
+from typing import Iterator
 
 import rich
-from rich.progress import Progress, TextColumn, SpinnerColumn, TaskID
+from rich.progress import TaskID
 
 from src.data.command_result import CommandResult
 from src.data.executor_callback_events import ExecutorCallbackEvents
@@ -68,7 +68,8 @@ class DefaultExecutor:
                 .apply_red()
                 .add(
                     " you are not root, this will make nmap fall back to an ICMP ping sweep instead of ICMP and/or ARP."
-                    " This means that you may miss hosts on the network and may lose useful information such as the MAC address of the device."
+                    " This means that you may miss hosts on the network and may lose useful information "
+                    " such as the MAC address of the device."
                 )
                 .clear_formatting()
                 .build()

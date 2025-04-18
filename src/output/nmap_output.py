@@ -1,6 +1,6 @@
 import re
 
-from rich import print
+from rich import print as rprint
 
 from src.data.command_result import CommandResult
 from src.data.device import Device
@@ -24,13 +24,13 @@ def format_and_output_from_check(command_result: CommandResult) -> None:
         output_message: str = (
             TyperOutputBuilder()
             .add_check_mark()
-            .apply_bold_magenta(f" Found nmap version: ")
+            .apply_bold_magenta(" Found nmap version: ")
             .apply_bold_cyan(f"{version}")
             .build()
         )
-        print(output_message + "\n")
+        rprint(output_message + "\n")
     else:
-        print(
+        rprint(
             TyperOutputBuilder()
             .apply_bold_red()
             .add_exclamation_mark()
@@ -47,10 +47,10 @@ def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
     :return: nothing, will just print
     """
     Logger().debug("Looping through devices to output.... ")
-    print(get_result_summary_message())
+    rprint(get_result_summary_message())
     for device in devices:
-        print(get_ip_and_mac_message(device))
-    print(
+        rprint(get_ip_and_mac_message(device))
+    rprint(
         "\n"
         + get_unique_devices_message(devices)
         + "\n"
@@ -67,7 +67,7 @@ def format_and_output_from_port_scan(scan_result: ScanResult) -> None:
     :return: nothing only outputs to the user
     """
     Logger().debug("Outputting port scan results.... ")
-    print("\n".join(build_port_message(scan_result)) + "\n" + build_os_info_message(scan_result))
+    rprint("\n".join(build_port_message(scan_result)) + "\n" + build_os_info_message(scan_result))
 
 
 def get_result_summary_message() -> str:
@@ -241,7 +241,9 @@ def build_os_info_message(scan_result: ScanResult) -> str:
         .add(" Found OS information: ")
         .clear_formatting()
         .apply_bold_cyan(
-            message=f"{device_from_port_scan.os.name}/{device_from_port_scan.os.vendor}/{device_from_port_scan.os.family}"
+            message=f"{device_from_port_scan.os.name}/"
+            f"{device_from_port_scan.os.vendor}/"
+            f"{device_from_port_scan.os.family}"
         )
         .apply_bold_magenta(message=" for host: ")
         .apply_bold_cyan(
