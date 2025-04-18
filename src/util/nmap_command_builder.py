@@ -116,4 +116,3 @@ class NmapCommandBuilder:
 
     def build_version_command(self) -> str:
         return f"{"sudo" if self.sudo else ""} nmap --version"
-
