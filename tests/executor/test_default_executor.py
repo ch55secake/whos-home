@@ -17,7 +17,7 @@ def test_execute_warns_if_not_sudo(mock_subprocess, mock_sudo, capsys):
     )
 
     executor = DefaultExecutor(timeout=5, warn_about_sudo=True)
-    result = executor.execute_host_discovery_command("echo -PE 'test'")
+    result = executor.execute("echo -PE 'test'")
 
     assert isinstance(result, CommandResult)
     assert result.stdout == "output"
@@ -35,7 +35,7 @@ def test_execute_success(mock_subprocess, mock_sudo):
     )
 
     executor = DefaultExecutor(timeout=5)
-    result = executor.execute_host_discovery_command("echo 'test'")
+    result = executor.execute("echo 'test'")
     assert result.stdout == "success output"
     assert result.success is True
     assert result.return_code == 0
@@ -45,7 +45,7 @@ def test_execute_success(mock_subprocess, mock_sudo):
 @patch("src.executor.default_executor.subprocess.run", side_effect=subprocess.CalledProcessError(00, "bad"))
 def test_execute_failure(mock_subprocess, mock_sudo, capsys):
     executor = DefaultExecutor(timeout=5)
-    result = executor.execute_host_discovery_command("badcommand")
+    result = executor.execute("badcommand")
 
     assert isinstance(result, CommandResult)
     assert result.success == ""

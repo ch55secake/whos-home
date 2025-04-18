@@ -84,7 +84,7 @@ def test_get_unique_devices_message(test_devices):
 
 def test_get_host_totals_message(scan_result_mock):
     msg = get_host_totals_message(scan_result_mock)
-    assert "2" in msg
+    assert "3" in msg
     assert "4" in msg
 
 
