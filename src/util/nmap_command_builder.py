@@ -117,21 +117,3 @@ class NmapCommandBuilder:
     def build_version_command(self) -> str:
         return f"{"sudo" if self.sudo else ""} nmap --version"
 
-    # Workable commands
-    # sudo nmap -O -T5 -sV -F -oX - <ip-no-cidr>
-    # sudo nmap -O -T5 -PE -PP -PM -sV -PR -F -oX - <ip-no-cidr>
-
-    # def build_port_scan_command(self) -> str:
-    #     flags = " ".join(flag.value for flag in self.enabled_flags)
-    #     # What the fuck is he doing here?
-    #     # nmap -sV -T5 --top-ports=1000 -Pn -oX -
-    #     os.makedirs("output", exist_ok=True)  # move this somewhere else if you want - possibly into whos-home.py
-    #     for file in os.listdir("output"):
-    #         file_path = os.path.join("output", file)
-    #         if os.path.isfile(file_path):
-    #             os.remove(file_path)
-    #
-    #     return (
-    #         f"cat ip_list.txt | xargs -I % -P 20 {"sudo " if self.sudo else ""}nmap % {flags} "
-    #         f"{AvailableNmapFlags.OUTPUT_TO_XML_FILE.value} output/nmap-general-port-scan-%.xml"
-    #     )
