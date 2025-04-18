@@ -4,7 +4,7 @@ from contextlib import closing
 from sqlite3 import Connection
 from typing import Any
 
-from util.logger import Logger
+from src.util.logger import Logger
 
 # TODO- env var or something else
 DB_PATH = "database.db"
@@ -45,7 +45,7 @@ class DatabaseConnector:
 
     def __migrate(self) -> None:
         Logger().debug("Migrating database...")
-        with open(SCHEMA_SQL, "r") as file:
+        with open(SCHEMA_SQL, "r", encoding="utf-8") as file:
             sql: str = file.read()
 
         for query in sql.split(";"):
