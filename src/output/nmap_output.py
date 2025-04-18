@@ -11,7 +11,7 @@ from src.util.logger import Logger
 
 def format_and_output_from_check(command_result: CommandResult) -> None:
     """
-    Check nmap version and if its person return a
+    Check nmap version, and if its person return a
     :param command_result: result of command execution
     :return: nothing just output message containing nmap version
     """
@@ -77,7 +77,7 @@ def build_ip_message(device: Device) -> str:
 def build_mac_addr_message(device: Device) -> str | None:
     """
     For a mac address there is a chance it's not present in the device, depending on if the user runs the command with
-    sudo or not hence the need for the check
+    sudo or not, hence the need for the check
     :param device: to pull the mac address from
     :return: string containing the mac address message
     """
@@ -88,6 +88,7 @@ def build_mac_addr_message(device: Device) -> str | None:
             .apply_bold_cyan(message=f"{device.mac_addr} ")
             .build()
         )
+    return None
 
 
 def get_ip_and_mac_message(device: Device) -> str:

@@ -24,7 +24,7 @@ class ScanResult:
 
     def get_total_hosts_from_runstats(self) -> str:
         """
-        Pull total number of hosts from the run stats
+        Pull the total number of hosts from the run stats
         :return: total number of hosts up as a string
         """
         return self.run_stats["hosts"]["@total"]
@@ -41,6 +41,7 @@ class ScanResult:
         for address in addresses:
             if address["@addrtype"] == address_type:
                 return address["@addr"]
+        return None
 
     def get_hostname(self, i: int) -> Any | None:
         """
@@ -48,6 +49,8 @@ class ScanResult:
         :return: The hostname
         """
         if isinstance(self.hosts, dict):
+            if self.hosts.get("hostnames") is None:
+                return None
             return self.hosts["hostnames"]["hostname"]["@name"]
 
         if self.hosts[i].get("hostnames") is None:

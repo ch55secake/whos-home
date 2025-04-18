@@ -36,7 +36,7 @@ class Logger:
         """
         Log a debug message
         :param message: the message to log
-        :return: nothing, will log message
+        :return: nothing, will log a message
         """
         if self._is_verbose:
             self.__logger.debug(message)
