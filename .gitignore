@@ -184,3 +184,6 @@ output
 
 # auto generated ip list
 ip_list.txt
+
+# database file
+*.db
