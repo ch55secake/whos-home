@@ -25,6 +25,7 @@ class DefaultExecutor:
         """
         self.timeout = timeout
         self.warn_about_sudo = warn_about_sudo
+        self.timeout_warning = False
 
     def execute(self, command: str) -> CommandResult:
         """
@@ -52,6 +53,17 @@ class DefaultExecutor:
                 .apply_bold_red(f" error occurred whilst executing nmap command, error: {e} ")
                 .build()
             )
+        except (TimeoutError, subprocess.TimeoutExpired):
+            if not self.timeout_warning:
+                rich.print(
+                    TyperOutputBuilder()
+                    .add_exclamation_mark()
+                    .apply_bold_red(
+                        f" Timeout occurred whilst executing command! Consider raising the timeout value with --timeout flag. "
+                    )
+                    .build()
+                )
+                self.timeout_warning = True
 
         Logger().debug("Creating command result.... ")
         return CommandResult.create_command_result(result, command)
