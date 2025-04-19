@@ -20,17 +20,22 @@ class DatabaseConnector:
 
         try:
             self.connection = sqlite3.connect(DB_PATH)
+            self.connection.row_factory = sqlite3.Row
             Logger().debug("Database connection established")
         except sqlite3.Error as e:
             Logger().debug(f"Database connection failed {e}")
             raise e
 
         if run_migration:
-            self.__migrate()
+            self.__initialize_db()
 
-    def execute_query(self, query: str, params: Any = None) -> Any:
-        if self.connection is None:
-            self.connect()
+    def find_one(self, query: str, params: Any = None) -> Any:
+        return self.__execute_query(query, params)
+
+    def find_all(self, query: str, params: Any = None) -> Any:
+        return self.__execute_query(query, params, fetch_one=False)
+
+    def __execute_query(self, query: str, params: Any = None, fetch_one: bool = True) -> Any:
         with closing(self.connection.cursor()) as cursor:
             try:
                 if params is not None:
@@ -38,18 +43,20 @@ class DatabaseConnector:
                 else:
                     cursor.execute(query)
                 self.connection.commit()
+                if fetch_one:
+                    return cursor.fetchone()
                 return cursor.fetchall()
             except sqlite3.Error as e:
-                Logger().debug(f"Query failed with error: {e}")
+                Logger().debug(f"Query: {query} with params: {params} failed with error: {e}")
                 raise e
 
-    def __migrate(self) -> None:
+    def __initialize_db(self) -> None:
         Logger().debug("Migrating database...")
         with open(SCHEMA_SQL, "r", encoding="utf-8") as file:
             sql: str = file.read()
 
         for query in sql.split(";"):
-            self.connection.execute(query)
+            self.__execute_query(query)
 
     def close(self):
         if self.connection:
