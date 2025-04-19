@@ -40,7 +40,7 @@ def main(
     """
     Discover hosts on the network using nmap
     """
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr)
+    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
     result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
         only_arp, only_icmp, icmp_and_arp, executor
     )
@@ -48,7 +48,6 @@ def main(
     if verbose:
         Logger().enable()
 
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
     if check:
         results_from_check: CommandResult = executor.execute_version_command()
         format_and_output_from_check(command_result=results_from_check)
@@ -70,7 +69,6 @@ def main(
                 ),
             )
 
-        # if enhanced_port_scan and port_scan:
         if extended_port_scan:
             Logger().debug("Beginning port scan....")
             ips: list[str] = [device.ip_addr for device in outputted_devices]

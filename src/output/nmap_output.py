@@ -116,7 +116,7 @@ def build_os_info_message(device_from_port_scan: Device) -> str:
         .apply_bold_red(
             message=f"{device_from_port_scan.os.name} | "
             f"{device_from_port_scan.os.vendor} | "
-            f"{device_from_port_scan.os.family} | "
+            f"{device_from_port_scan.os.family} "
         )
         .build()
     )
