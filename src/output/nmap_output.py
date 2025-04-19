@@ -67,7 +67,7 @@ def format_and_output_from_port_scan(scan_result: ScanResult) -> None:
     :return: nothing only outputs to the user
     """
     Logger().debug("Outputting port scan results.... ")
-    device_from_port_scan: Device = scan_result.get_device()
+    device_from_port_scan: NmapDevice = scan_result.get_device()
     if (
         isinstance(device_from_port_scan.ports, list)
         and device_from_port_scan.ports
@@ -100,7 +100,7 @@ def build_port_info_message(port: Port) -> str:
     )
 
 
-def build_os_info_message(device_from_port_scan: Device) -> str:
+def build_os_info_message(device_from_port_scan: NmapDevice) -> str:
     """
     Build the os info message to be printed to the user
     :param device_from_port_scan: device to get the os info from
@@ -122,7 +122,7 @@ def build_os_info_message(device_from_port_scan: Device) -> str:
     )
 
 
-def contains_os_info(device_from_port_scan: Device) -> bool:
+def contains_os_info(device_from_port_scan: NmapDevice) -> bool:
     """
     Check if the device has OS information.
     :param device_from_port_scan: device to check
