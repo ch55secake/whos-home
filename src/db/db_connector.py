@@ -47,7 +47,7 @@ class DatabaseConnector:
                     return cursor.fetchone()
                 return cursor.fetchall()
             except sqlite3.Error as e:
-                Logger().debug(f"Query failed with error: {e}")
+                Logger().debug(f"Query: {query} with params: {params} failed with error: {e}")
                 raise e
 
     def __initialize_db(self) -> None:
