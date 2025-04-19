@@ -20,6 +20,7 @@ class DatabaseConnector:
 
         try:
             self.connection = sqlite3.connect(DB_PATH)
+            self.connection.row_factory = sqlite3.Row
             Logger().debug("Database connection established")
         except sqlite3.Error as e:
             Logger().debug(f"Database connection failed {e}")
@@ -43,7 +44,7 @@ class DatabaseConnector:
                 Logger().debug(f"Query failed with error: {e}")
                 raise e
 
-    def __migrate(self) -> None:
+    def __initialize_db(self) -> None:
         Logger().debug("Migrating database...")
         with open(SCHEMA_SQL, "r", encoding="utf-8") as file:
             sql: str = file.read()
