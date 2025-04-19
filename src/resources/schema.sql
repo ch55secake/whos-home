@@ -1,11 +1,11 @@
 CREATE TABLE users (
-  id int PRIMARY KEY,
-  name varchar(128)
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(128) NOT NULL
 );
 
 CREATE TABLE devices (
-  id int PRIMARY KEY,
-  device_name varchar(128),
-  owned_by int,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  device_name VARCHAR(128) NOT NULL,
+  owned_by INTEGER,
   FOREIGN KEY (owned_by) REFERENCES devices(id)
 );
