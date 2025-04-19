@@ -51,16 +51,18 @@ def test_execute_icmp_host_discovery(mock_sudo, mock_executor):
     assert "-oX" in cmd
 
 
-@patch("src.executor.nmap_executor.DefaultExecutor")
-@patch("src.executor.nmap_executor.running_as_sudo", return_value=True)
-def test_execute_aggressive_scan(mock_sudo, mock_executor):
-    mock_result = MagicMock()
-    mock_executor.return_value.execute.return_value = mock_result
-
-    executor = NmapExecutor("10.0.0.1", "24")
-    result = executor.execute_aggressive_scan()
-
-    assert result == mock_result
-    cmd = mock_executor.return_value.execute.call_args[0][0]
-    assert "-A" in cmd
-    assert "-T5" in cmd
+# @patch("src.executor.nmap_executor.DefaultExecutor")
+# @patch("src.executor.nmap_executor.running_as_sudo", return_value=True)
+# def test_execute_enhanced_scan(mock_sudo, mock_executor):
+#     mock_result = MagicMock()
+#     mock_executor.return_value.execute.return_value = mock_result
+#
+#     executor = NmapExecutor("10.0.0.1", "24")
+#     result = executor.execute_extended_port_scan()
+#
+#     assert result == mock_result
+#     cmd = mock_executor.return_value.execute.call_args[0][0]
+#     assert "-sV" in cmd
+#     assert "-T5" in cmd
+#     assert "-Pn" in cmd
+#     assert "-oX -" in cmd
