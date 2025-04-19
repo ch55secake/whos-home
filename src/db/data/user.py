@@ -1,14 +1,8 @@
-from dataclasses import dataclass, astuple, asdict
+from dataclasses import dataclass
+
+from src.db.data.entity import Entity
 
 
 @dataclass
-class User:
-    id: int | None
+class User(Entity):
     name: str | None
-
-    def to_row(self) -> tuple:
-        return astuple(self)
-
-    def to_dict(self) -> dict:
-        d = asdict(self)
-        return {k: v for k, v in d.items()}
