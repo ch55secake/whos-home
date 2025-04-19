@@ -35,7 +35,7 @@ def main(
     verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
     check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
     timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
-    extended_port_scan: Annotated[bool, t.Option(help="Scan more ports (1000), than the default port scan.")] = False,
+    extended_port_scan: Annotated[bool, t.Option(help="Scan more ports (1000) than the default port scan.")] = False,
 ) -> None:
     """
     Discover hosts on the network using nmap
