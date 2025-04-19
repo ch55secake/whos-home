@@ -3,7 +3,7 @@ import re
 from rich import print as rprint
 
 from src.data.command_result import CommandResult
-from src.data.device import Device
+from src.data.device import Device, Port
 from src.data.scan_result import ScanResult
 from src.output.typer_output_builder import TyperOutputBuilder
 from src.util.logger import Logger
@@ -67,7 +67,87 @@ def format_and_output_from_port_scan(scan_result: ScanResult) -> None:
     :return: nothing only outputs to the user
     """
     Logger().debug("Outputting port scan results.... ")
-    rprint("\n".join(build_port_message(scan_result)) + "\n" + build_os_info_message(scan_result))
+    device_from_port_scan: Device = scan_result.get_device()
+    if (
+        isinstance(device_from_port_scan.ports, list)
+        and device_from_port_scan.ports
+        or contains_os_info(device_from_port_scan)
+    ):
+        rprint(build_port_summary_message(device_from_port_scan))
+        if contains_os_info(device_from_port_scan):
+            rprint(build_os_info_message(device_from_port_scan))
+        if isinstance(device_from_port_scan.ports, list) and device_from_port_scan.ports:
+            rprint("\n".join(build_port_info_message(port) for port in device_from_port_scan.ports))
+
+
+def build_port_info_message(port: Port) -> str:
+    """
+    Build the port info message to be printed to the user
+    :param port: port to get the info from
+    :return: str message to be printed to the user
+    """
+    return (
+        TyperOutputBuilder()
+        .add("  ")
+        .apply_bold_cyan()
+        .add_square()
+        .add(" ")
+        .clear_formatting()
+        .apply_bold_cyan(
+            message="{:<10}".format(f"{port.id}/{port.protocol} {port.service.name} {port.service.product}")
+        )
+        .build()
+    )
+
+
+def build_os_info_message(device_from_port_scan: Device) -> str:
+    """
+    Build the os info message to be printed to the user
+    :param device_from_port_scan: device to get the os info from
+    :return: str message to be printed to the user
+    """
+    return (
+        TyperOutputBuilder()
+        .add("  ")
+        .apply_bold_red()
+        .add_square()
+        .add(" ")
+        .clear_formatting()
+        .apply_bold_red(
+            message=f"{device_from_port_scan.os.name} | "
+            f"{device_from_port_scan.os.vendor} | "
+            f"{device_from_port_scan.os.family} | "
+        )
+        .build()
+    )
+
+
+def contains_os_info(device_from_port_scan: Device) -> bool:
+    """
+    Check if the device has OS information.
+    :param device_from_port_scan: device to check
+    :return: True if the device has OS information, False otherwise
+    """
+    return (
+        device_from_port_scan.os.vendor != "(Unknown)"
+        and device_from_port_scan.os.name != "(Unknown)"
+        and device_from_port_scan.os.family != "(Unknown)"
+    )
+
+
+def build_port_summary_message(device_from_port_scan):
+    return (
+        TyperOutputBuilder()
+        .add("\n")
+        .apply_bold_magenta()
+        .add_square()
+        .add(" Found the following information about:")
+        .clear_formatting()
+        .apply_bold_cyan(
+            message=f" {device_from_port_scan.ip_addr} {check_hostname_is_none(device_from_port_scan.hostname)}"
+        )
+        .build()
+    )
 
 
 def get_result_summary_message() -> str:
@@ -86,7 +166,7 @@ def check_hostname_is_none(hostname: str | None) -> str:
     """
     if isinstance(hostname, str):
         return hostname
-    return "(Unknown)"
+    return "(Unknown Hostname)"
 
 
 def build_ip_message(device: Device) -> str:
@@ -202,54 +282,3 @@ def get_host_totals_message(scan_result: ScanResult) -> str:
         .apply_bold_magenta(message=" hosts")
         .build()
     ) + "\n"
-
-
-def build_port_message(scan_result: ScanResult) -> list[str]:
-    """
-    Build the port message to be printed to the user requires iteration as there is sometimes a list of ports
-    :param scan_result: scan_result to get the device from and the ports from
-    :return: a list of str messages to be printed to the user
-    """
-    device_from_port_scan: Device = scan_result.get_device()
-    return [
-        TyperOutputBuilder()
-        .apply_bold_magenta()
-        .add_square()
-        .add(" Found ports: ")
-        .clear_formatting()
-        .apply_bold_cyan(message="{:<10}".format(f"{port.id}/{port.protocol}"))
-        .apply_bold_magenta(message=" for host: ")
-        .apply_bold_cyan(
-            message=f"{device_from_port_scan.ip_addr}({check_hostname_is_none(device_from_port_scan.hostname)})"
-        )
-        .build()
-        for port in device_from_port_scan.ports
-    ]
-
-
-def build_os_info_message(scan_result: ScanResult) -> str:
-    """
-    Build the os info message to be printed from the port scan results
-    :param scan_result: scan_result to get the device from and the os info from
-    :return: a message to be printed to the user
-    """
-    device_from_port_scan: Device = scan_result.get_device()
-    return (
-        TyperOutputBuilder()
-        .apply_bold_magenta()
-        .add_square()
-        .add(" Found OS information: ")
-        .clear_formatting()
-        .apply_bold_cyan(
-            message=f"{device_from_port_scan.os.name}/"
-            f"{device_from_port_scan.os.vendor}/"
-            f"{device_from_port_scan.os.family}"
-        )
-        .apply_bold_magenta(message=" for host: ")
-        .apply_bold_cyan(
-            message="{:<10}".format(
-                f"{device_from_port_scan.ip_addr}({check_hostname_is_none(device_from_port_scan.hostname)})"
-            )
-        )
-        .build()
-    )

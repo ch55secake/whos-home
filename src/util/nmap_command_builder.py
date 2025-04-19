@@ -16,8 +16,6 @@ class AvailableNmapFlags(Enum):
 
     COMMON_PORTS = "-F"
 
-    TOP_1000_PORTS = "--top-ports=100"
-
     FULL_PORT_SCAN = "-p-"
 
     AGGRESSIVE_TIMING = "-T5"
@@ -80,9 +78,6 @@ class NmapCommandBuilder:
         :return: NmapCommandBuilder
         """
         return self.enable_flag(AvailableNmapFlags.AGGRESSIVE)
-
-    def enable_top_1000_ports(self) -> NmapCommandBuilder:
-        return self.enable_flag(AvailableNmapFlags.TOP_1000_PORTS)
 
     def enable_skip_host_discovery(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.SKIP_HOST_DISCOVERY)
