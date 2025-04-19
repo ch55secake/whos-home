@@ -35,11 +35,12 @@ def main(
     verbose: Annotated[bool, t.Option(help="Verbose output when invoking nmap scans")] = False,
     check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
     timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
+    extended_port_scan: Annotated[bool, t.Option(help="Scan more ports (1000) than the default port scan.")] = False,
 ) -> None:
     """
     Discover hosts on the network using nmap
     """
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr)
+    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
     result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
         only_arp, only_icmp, icmp_and_arp, executor
     )
@@ -47,7 +48,6 @@ def main(
     if verbose:
         Logger().enable()
 
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
     if check:
         results_from_check: CommandResult = executor.execute_version_command()
         format_and_output_from_check(command_result=results_from_check)
@@ -63,6 +63,17 @@ def main(
             ips: list[str] = [device.ip_addr for device in outputted_devices]
 
             executor.execute_general_port_scan(
+                ips,
+                ExecutorCallbackEvents(
+                    ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback
+                ),
+            )
+
+        if extended_port_scan:
+            Logger().debug("Beginning port scan....")
+            ips: list[str] = [device.ip_addr for device in outputted_devices]
+
+            executor.execute_extended_port_scan(
                 ips,
                 ExecutorCallbackEvents(
                     ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback

@@ -59,7 +59,23 @@ class NmapExecutor:
             .enable_xml_to_stdout()
             .build()
         )
-        return self.executor.execute(command)
+        with Progress(
+            TextColumn(" "),
+            SpinnerColumn(style="magenta", spinner_name="aesthetic"),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
+        ) as progress:
+            progress.add_task(
+                description=TyperOutputBuilder()
+                .apply_bold_magenta(" Running: ")
+                .apply_bold_cyan(command)
+                .apply_bold_magenta(" at: ")
+                .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
+                .apply_bold_magenta(" .......")
+                .build(),
+                total=None,
+            )
+            return self.executor.execute(command)
 
     def execute_arp_host_discovery(self) -> CommandResult:
         """
@@ -143,19 +159,26 @@ class NmapExecutor:
 
         return self.executor.async_pooled_execute(commands, events)
 
-    def execute_aggressive_scan(self) -> CommandResult:
+    def execute_extended_port_scan(self, ips: list[str], events: ExecutorCallbackEvents) -> list[CommandResult]:
         """
-        Run an aggressive nmap port scan
-        :return: result of command execution
+        Executes an enhanced port scan on a list of provided IP addresses.
+        :param ips:
+        :param events:
+        :return:
         """
-        # This needs further consideration in the future - do we want/need an agro scan in a home network?
-        # Do we want even more options? do we want fully customisable port scans?
-        # For now this is a placeholder and is not used.
-        command: str = (
-            self.builder.enable_flag(AvailableNmapFlags.TOP_1000_PORTS)
-            .enable_aggressive_timing()
-            .enable_flag(AvailableNmapFlags.AGGRESSIVE)
-            .enable_xml_to_stdout()
-            .build()
+        Logger().debug(f"Executing general port scan on {ips}")
+
+        commands: list[str] = list(
+            map(
+                lambda ip: NmapCommandBuilder(ip, self.cidr)
+                .enable_service_scan()
+                .enable_aggressive_timing()
+                .enable_skip_host_discovery()
+                .enable_os_detection()
+                .enable_xml_to_stdout()
+                .build_without_cidr(),
+                ips,
+            )
         )
-        return self.executor.execute(command)
+
+        return self.executor.async_pooled_execute(commands, events)

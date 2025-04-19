@@ -187,3 +187,6 @@ ip_list.txt
 
 # database file
 *.db
+
+# sudo script
+run_sudo.sh
