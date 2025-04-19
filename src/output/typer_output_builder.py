@@ -58,6 +58,9 @@ class TyperOutputBuilder:
     def apply_magenta(self) -> TyperOutputBuilder:
         return self.add_formatting("magenta")
 
+    def apply_green(self) -> TyperOutputBuilder:
+        return self.add_formatting("green")
+
     def apply_red(self) -> TyperOutputBuilder:
         return self.add_formatting("red")
 
@@ -75,6 +78,11 @@ class TyperOutputBuilder:
         if message is None:
             return self.apply_bold().apply_red()
         return self.apply_bold().apply_red().add(message).clear_formatting()
+
+    def apply_bold_green(self, message: Any | None = None) -> TyperOutputBuilder:
+        if message is None:
+            return self.apply_bold().apply_green()
+        return self.apply_bold().apply_green().add(message).clear_formatting()
 
     def clear_formatting(self) -> TyperOutputBuilder:
         if self.__instructions is None:

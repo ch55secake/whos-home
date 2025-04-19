@@ -59,7 +59,23 @@ class NmapExecutor:
             .enable_xml_to_stdout()
             .build()
         )
-        return self.executor.execute(command)
+        with Progress(
+            TextColumn(" "),
+            SpinnerColumn(style="magenta", spinner_name="aesthetic"),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
+        ) as progress:
+            progress.add_task(
+                description=TyperOutputBuilder()
+                .apply_bold_magenta(" Running: ")
+                .apply_bold_cyan(command)
+                .apply_bold_magenta(" at: ")
+                .apply_bold_cyan(datetime.datetime.now().time().strftime("%H:%M:%S"))
+                .apply_bold_magenta(" .......")
+                .build(),
+                total=None,
+            )
+            return self.executor.execute(command)
 
     def execute_arp_host_discovery(self) -> CommandResult:
         """
