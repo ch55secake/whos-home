@@ -3,7 +3,7 @@ from typing import Annotated
 import typer as t
 
 from src.data.command_result import CommandResult
-from src.data.device import Device
+from src.data.nmapdevice import NmapDevice
 from src.data.executor_callback_events import ExecutorCallbackEvents
 from src.data.scan_result import ScanResult
 from src.executor.default_executor import running_as_sudo
@@ -55,7 +55,7 @@ def main(
     if result_from_host_discovery.success:
         parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
         outputted_scan_result: ScanResult = parser.create_scan_result()
-        outputted_devices: list[Device] = outputted_scan_result.get_devices()
+        outputted_devices: list[NmapDevice] = outputted_scan_result.get_devices()
         format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
 
         if port_scan:

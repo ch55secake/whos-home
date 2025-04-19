@@ -35,7 +35,7 @@ class Port:
 
 
 @dataclass
-class Device:
+class NmapDevice:
     """
     Represents a device pulled from the network scan
     """

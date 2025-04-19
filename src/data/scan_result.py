@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import OrderedDict, Any, Tuple, Optional
 
-from src.data.device import Device, OperatingSystem, Port, Service
+from src.data.nmapdevice import NmapDevice, OperatingSystem, Port, Service
 
 
 @dataclass
@@ -142,7 +142,7 @@ class ScanResult:
             return None
         return self.hosts[i]["hostnames"]["hostname"]["@name"]
 
-    def get_devices(self) -> list[Device]:
+    def get_devices(self) -> list[NmapDevice]:
         """
         Get the ip addresses and the hostnames from the scan result
         :return: a dict of the ip addresses and the hostnames
@@ -151,7 +151,7 @@ class ScanResult:
             self.hosts = [self.hosts]
 
         return [
-            Device(
+            NmapDevice(
                 hostname=self.find_hostname(i),
                 mac_addr=self.get_address(i, "mac"),
                 ip_addr=self.get_address(i, "ipv4"),
@@ -225,7 +225,7 @@ class ScanResult:
             if isinstance(port, dict)
         ]
 
-    def get_device(self) -> Device:
+    def get_device(self) -> NmapDevice:
         """
         Retrieve the device configuration including hostname, IP address, MAC address,
         operating system details, and associated ports. Uses internal methods to fetch
@@ -234,9 +234,9 @@ class ScanResult:
 
         :return: A Device object containing information about the hostname, IP address,
             MAC address, operating system, and ports.
-        :rtype: Device
+        :rtype: NmapDevice
         """
-        return Device(
+        return NmapDevice(
             hostname=self.get_hostname(),
             ip_addr=self.get_ipv4(),
             mac_addr=None,

@@ -1,7 +1,7 @@
 import pytest
 
 from src.data.command_result import CommandResult
-from src.data.device import Device
+from src.data.nmapdevice import NmapDevice
 from src.data.scan_result import ScanResult
 from src.output.nmap_output import (
     format_and_output,
@@ -18,10 +18,10 @@ from src.output.nmap_output import (
 @pytest.fixture
 def test_devices():
     return [
-        Device(ip_addr="192.168.0.1", mac_addr="00:11:22:33:44:55", hostname="router", os=None, ports=None),
-        Device(ip_addr="192.168.0.2", mac_addr=None, hostname="laptop", os=None, ports=None),
-        Device(ip_addr="192.168.0.3", mac_addr="AA:BB:CC:DD:EE:FF", hostname="phone", os=None, ports=None),
-        Device(ip_addr="192.168.0.4", mac_addr="11:22:33:44:55:66", hostname="router", os=None, ports=None),
+        NmapDevice(ip_addr="192.168.0.1", mac_addr="00:11:22:33:44:55", hostname="router", os=None, ports=None),
+        NmapDevice(ip_addr="192.168.0.2", mac_addr=None, hostname="laptop", os=None, ports=None),
+        NmapDevice(ip_addr="192.168.0.3", mac_addr="AA:BB:CC:DD:EE:FF", hostname="phone", os=None, ports=None),
+        NmapDevice(ip_addr="192.168.0.4", mac_addr="11:22:33:44:55:66", hostname="router", os=None, ports=None),
     ]
 
 
@@ -38,25 +38,25 @@ def scan_result_mock():
 
 
 def test_build_ip_message():
-    device = Device(ip_addr="192.168.0.10", mac_addr=None, hostname="test-device", os=None, ports=None)
+    device = NmapDevice(ip_addr="192.168.0.10", mac_addr=None, hostname="test-device", os=None, ports=None)
     msg = build_ip_message(device)
     assert "192.168.0.10" in msg
 
 
 def test_build_mac_addr_message_with_mac():
-    device = Device(ip_addr="x", mac_addr="AA:BB:CC", hostname="host", os=None, ports=None)
+    device = NmapDevice(ip_addr="x", mac_addr="AA:BB:CC", hostname="host", os=None, ports=None)
     msg = build_mac_addr_message(device)
     assert "AA:BB:CC" in msg
 
 
 def test_build_mac_addr_message_without_mac():
-    device = Device(ip_addr="x", mac_addr=None, hostname="host", os=None, ports=None)
+    device = NmapDevice(ip_addr="x", mac_addr=None, hostname="host", os=None, ports=None)
     msg = build_mac_addr_message(device)
     assert msg is None
 
 
 def test_get_ip_and_mac_message_with_mac():
-    device = Device(ip_addr="1.2.3.4", mac_addr="00:00:00", hostname="abc", os=None, ports=None)
+    device = NmapDevice(ip_addr="1.2.3.4", mac_addr="00:00:00", hostname="abc", os=None, ports=None)
     msg = get_ip_and_mac_message(device)
     assert "1.2.3.4" in msg
     assert "00:00:00" in msg
@@ -64,7 +64,7 @@ def test_get_ip_and_mac_message_with_mac():
 
 
 def test_get_ip_and_mac_message_without_mac():
-    device = Device(ip_addr="1.2.3.4", mac_addr=None, hostname="abc", os=None, ports=None)
+    device = NmapDevice(ip_addr="1.2.3.4", mac_addr=None, hostname="abc", os=None, ports=None)
     msg = get_ip_and_mac_message(device)
     assert "1.2.3.4" in msg
     assert "abc" in msg
