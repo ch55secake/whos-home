@@ -45,19 +45,19 @@ def test_build_ip_message():
 
 def test_build_mac_addr_message_with_mac():
     device = NmapDevice(ip_addr="x", mac_addr="AA:BB:CC", hostname="host", os=None, ports=None)
-    msg = build_mac_addr_message(device)
+    msg = build_mac_addr_message(device, int(len(device.mac_addr)))
     assert "AA:BB:CC" in msg
 
 
 def test_build_mac_addr_message_without_mac():
     device = NmapDevice(ip_addr="x", mac_addr=None, hostname="host", os=None, ports=None)
-    msg = build_mac_addr_message(device)
+    msg = build_mac_addr_message(device, 0)
     assert msg is None
 
 
 def test_get_ip_and_mac_message_with_mac():
     device = NmapDevice(ip_addr="1.2.3.4", mac_addr="00:00:00", hostname="abc", os=None, ports=None)
-    msg = get_ip_and_mac_message(device)
+    msg = get_ip_and_mac_message(device, [device])
     assert "1.2.3.4" in msg
     assert "00:00:00" in msg
     assert "abc" in msg
@@ -65,7 +65,7 @@ def test_get_ip_and_mac_message_with_mac():
 
 def test_get_ip_and_mac_message_without_mac():
     device = NmapDevice(ip_addr="1.2.3.4", mac_addr=None, hostname="abc", os=None, ports=None)
-    msg = get_ip_and_mac_message(device)
+    msg = get_ip_and_mac_message(device, [device])
     assert "1.2.3.4" in msg
     assert "abc" in msg
     assert "mac" not in msg.lower()

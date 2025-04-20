@@ -125,7 +125,11 @@ class ScanResult:
 
         for address in addresses:
             if address["@addrtype"] == address_type:
-                return address["@addr"]
+                if address_type == "mac":
+                    if address.get("@vendor") and address["@vendor"].strip():
+                        return f"{address['@addr']} | {address['@vendor']}"
+                    return f"{address['@addr']} | (Unknown Vendor)"
+                return f"{address['@addr']}"
         return None
 
     def find_hostname(self, i: int) -> Any | None:
