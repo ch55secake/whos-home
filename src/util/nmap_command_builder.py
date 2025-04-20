@@ -66,6 +66,9 @@ class NmapCommandBuilder:
     def enable_exclude_ports(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.EXCLUDE_PORTS)
 
+    def enable_full_port_scan(self) -> NmapCommandBuilder:
+        return self.enable_flag(AvailableNmapFlags.FULL_PORT_SCAN)
+
     def enable_aggressive_timing(self) -> NmapCommandBuilder:
         return self.enable_flag(AvailableNmapFlags.AGGRESSIVE_TIMING)
 
