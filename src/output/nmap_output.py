@@ -49,7 +49,7 @@ def format_and_output(scan_result: ScanResult, devices: list[NmapDevice]) -> Non
     Logger().debug("Looping through devices to output.... ")
     rprint(get_result_summary_message())
     for device in devices:
-        rprint(get_ip_and_mac_message(device))
+        rprint(get_ip_and_mac_message(device, devices))
     rprint(
         "\n"
         + get_unique_devices_message(devices)
@@ -195,31 +195,42 @@ def build_post_scan_message() -> str:
     return TyperOutputBuilder().apply_bold_magenta(message=" [~] Scan complete!").build()
 
 
-def build_mac_addr_message(device: NmapDevice) -> str | None:
+def build_mac_addr_message(device: NmapDevice, max_mac_length: int) -> str | None:
     """
-    For a mac address there is a chance it's not present in the device, depending on if the user runs the command with
-    sudo or not, hence the need for the check
+    Format the MAC address message dynamically based on the maximum MAC address length.
     :param device: to pull the mac address from
+    :param max_mac_length: the maximum length of all MAC addresses
     :return: string containing the mac address message
     """
     if device.mac_addr is not None:
+        formatted_mac_addr = f"{device.mac_addr:<{max_mac_length}}"  # Dynamically pad to max length
         return (
             TyperOutputBuilder()
             .apply_bold_magenta(message="and mac address: ")
-            .apply_bold_cyan(message=f"{device.mac_addr} ")
+            .apply_bold_cyan(message=f"{formatted_mac_addr} ")
             .build()
         )
     return None
 
 
-def get_ip_and_mac_message(device: NmapDevice) -> str:
+def get_max_mac_length(devices: list[NmapDevice]) -> int:
+    """
+    Get the maximum length of all MAC addresses in the list of devices.
+    :param devices: list of devices
+    :return: maximum length of MAC addresses
+    """
+    return max((len(device.mac_addr) for device in devices if device.mac_addr is not None), default=0)
+
+
+def get_ip_and_mac_message(device: NmapDevice, devices: list[NmapDevice]) -> str:
     """
     Get the message that contains the ip address, mac address and host name
+    :param devices: list of devices to check the max length of the mac address
     :param device: the device being iterated over
     :return: the str message to be printed
     """
     # Warning: The spacing is extremely finicky. Change at your own risk.
-    mac_addr_message: str = build_mac_addr_message(device)
+    mac_addr_message: str = build_mac_addr_message(device, get_max_mac_length(devices))
     if mac_addr_message:
         return (
             TyperOutputBuilder()
