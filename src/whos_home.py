@@ -39,62 +39,78 @@ def main(
     check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
     timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
     extended_port_scan: Annotated[bool, t.Option(help="Scan more ports (1000) than the default port scan.")] = False,
+    full_port_scan: Annotated[bool, t.Option(help="Scan all ports.")] = False,
 ) -> None:
     """
     Discover hosts on the network using nmap
     """
-    executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
-    result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
-        only_arp, only_icmp, icmp_and_arp, executor
-    )
-
-    if schedule != "" or None:
-        Scheduler().schedule_task(
-            schedule_value=schedule,
-            main_fn=main,
-            host=host,
-            cidr=cidr,
-            timeout=timeout,
-            verbose=verbose,
-            check=check,
-            port_scan=port_scan,
-            extended_port_scan=extended_port_scan,
+    hosts = parse_hosts(host)
+    for host in hosts:
+        executor: NmapExecutor = NmapExecutor(host=host, cidr=cidr, timeout=timeout)
+        result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
+            only_arp, only_icmp, icmp_and_arp, executor
         )
 
-    if verbose:
-        Logger().enable()
-
-    if check:
-        results_from_check: CommandResult = executor.execute_version_command()
-        format_and_output_from_check(command_result=results_from_check)
-
-    if result_from_host_discovery.success:
-        parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
-        outputted_scan_result: ScanResult = parser.create_scan_result()
-        outputted_devices: list[NmapDevice] = outputted_scan_result.get_devices()
-        format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
-
-        if port_scan:
-            Logger().debug("Beginning port scan....")
-            ips: list[str] = [device.ip_addr for device in outputted_devices]
-
-            executor.execute_general_port_scan(
-                ips,
-                ExecutorCallbackEvents(
-                    ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback
-                ),
+        if schedule != "" or None:
+            Scheduler().schedule_task(
+                schedule_value=schedule,
+                main_fn=main,
+                host=host,
+                cidr=cidr,
+                timeout=timeout,
+                verbose=verbose,
+                check=check,
+                port_scan=port_scan,
+                extended_port_scan=extended_port_scan,
             )
 
-        if extended_port_scan:
-            Logger().debug("Beginning port scan....")
-            ips: list[str] = [device.ip_addr for device in outputted_devices]
+        if verbose:
+            Logger().enable()
 
-            executor.execute_extended_port_scan(
-                ips,
-                ExecutorCallbackEvents(
-                    ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback
-                ),
-            )
+        if check:
+            results_from_check: CommandResult = executor.execute_version_command()
+            format_and_output_from_check(command_result=results_from_check)
+
+        if result_from_host_discovery.success:
+            parser: NmapOutputParser = NmapOutputParser(result_from_host_discovery)
+            outputted_scan_result: ScanResult = parser.create_scan_result()
+            outputted_devices: list[NmapDevice] = outputted_scan_result.get_devices()
+            format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
+
+            if port_scan:
+                perform_port_scan("general", outputted_devices, executor)
+
+            if extended_port_scan:
+                perform_port_scan("extended", outputted_devices, executor)
+
+            if full_port_scan:
+                perform_port_scan("full", outputted_devices, executor)
+
+
+def perform_port_scan(scan_type: str, devices: list, executor):
+    """
+    Performs a port scan on the devices using the specified scan type.
+    :param scan_type: The type of scan to perform. Can be "general", "extended", or "full".
+    :param devices: The devices to scan.
+    :param executor: The executor to use for the scan.
+    :return: None
+    """
+    Logger().debug("Beginning port scan....")
+    ips: list[str] = [device.ip_addr for device in devices]
+    callbacks = ExecutorCallbackEvents(
+        ExecutorCallbackEvents.pre_execution_callback,
+        ExecutorCallbackEvents.post_execution_callback,
+    )
+
+    scan_methods = {
+        "general": executor.execute_general_port_scan,
+        "extended": executor.execute_extended_port_scan,
+        "full": executor.execute_full_port_scan,
+    }
+
+    scan_method = scan_methods.get(scan_type)
+    if scan_method:
+        scan_method(ips, callbacks)
 
 
 def execute_host_discovery_based_on_flag(
@@ -113,6 +129,15 @@ def execute_host_discovery_based_on_flag(
         return executor.execute_arp_icmp_host_discovery()
     Logger().debug(f"Running nmap with only {"arp" if only_arp else "icmp"}...")
     return executor.execute_arp_host_discovery() if only_arp else executor.execute_icmp_host_discovery()
+
+
+def parse_hosts(host: str) -> list[str]:
+    """
+    Check the host given in the command line and return a list of hosts. If only one host is given, returns a list of one host. If there were multiple hosts, it will return a list of those hosts.
+    :param host: The host that you want to scan against.
+    :return: A list of hosts.
+    """
+    return host.split(" ") if " " in host else [host]
 
 
 @app.callback()

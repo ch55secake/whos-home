@@ -120,12 +120,15 @@ class ScanResult:
         :return: The address
         """
         addresses = self.hosts[i]["address"] if isinstance(self.hosts, list) else self.hosts["address"]
-        if isinstance(addresses, dict):
-            addresses = [addresses]
+        addresses = [addresses] if isinstance(addresses, dict) else addresses
 
         for address in addresses:
-            if address["@addrtype"] == address_type:
-                return address["@addr"]
+            if address.get("@addrtype") == address_type:
+                addr = address.get("@addr")
+                if address_type == "mac":
+                    vendor = address.get("@vendor", "").strip()
+                    return f"{addr} | {vendor if vendor else '(Unknown Vendor)'}"
+                return addr
         return None
 
     def find_hostname(self, i: int) -> Any | None:
