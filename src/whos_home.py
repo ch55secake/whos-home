@@ -39,6 +39,7 @@ def main(
     check: Annotated[bool, t.Option(help="Check if nmap installation is working")] = False,
     timeout: Annotated[int, t.Option(help="Control the duration of the command execution")] = 60,
     extended_port_scan: Annotated[bool, t.Option(help="Scan more ports (1000) than the default port scan.")] = False,
+    full_port_scan: Annotated[bool, t.Option(help="Scan all ports.")] = False,
 ) -> None:
     """
     Discover hosts on the network using nmap
@@ -77,26 +78,39 @@ def main(
             format_and_output(scan_result=outputted_scan_result, devices=outputted_devices)
 
             if port_scan:
-                Logger().debug("Beginning port scan....")
-                ips: list[str] = [device.ip_addr for device in outputted_devices]
-
-                executor.execute_general_port_scan(
-                    ips,
-                    ExecutorCallbackEvents(
-                        ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback
-                    ),
-                )
+                perform_port_scan("general", outputted_devices, executor)
 
             if extended_port_scan:
-                Logger().debug("Beginning port scan....")
-                ips: list[str] = [device.ip_addr for device in outputted_devices]
+                perform_port_scan("extended", outputted_devices, executor)
 
-                executor.execute_extended_port_scan(
-                    ips,
-                    ExecutorCallbackEvents(
-                        ExecutorCallbackEvents.pre_execution_callback, ExecutorCallbackEvents.post_execution_callback
-                    ),
-                )
+            if full_port_scan:
+                perform_port_scan("full", outputted_devices, executor)
+
+
+def perform_port_scan(scan_type: str, devices: list, executor):
+    """
+    Performs a port scan on the devices using the specified scan type.
+    :param scan_type: The type of scan to perform. Can be "general", "extended", or "full".
+    :param devices: The devices to scan.
+    :param executor: The executor to use for the scan.
+    :return: None
+    """
+    Logger().debug("Beginning port scan....")
+    ips: list[str] = [device.ip_addr for device in devices]
+    callbacks = ExecutorCallbackEvents(
+        ExecutorCallbackEvents.pre_execution_callback,
+        ExecutorCallbackEvents.post_execution_callback,
+    )
+
+    scan_methods = {
+        "general": executor.execute_general_port_scan,
+        "extended": executor.execute_extended_port_scan,
+        "full": executor.execute_full_port_scan,
+    }
+
+    scan_method = scan_methods.get(scan_type)
+    if scan_method:
+        scan_method(ips, callbacks)
 
 
 def execute_host_discovery_based_on_flag(

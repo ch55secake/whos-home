@@ -182,3 +182,28 @@ class NmapExecutor:
         )
 
         return self.executor.async_pooled_execute(commands, events)
+
+    def execute_full_port_scan(self, ips: list[str], events: ExecutorCallbackEvents) -> list[CommandResult]:
+        """
+        Executes a full port scan on a list of provided IP addresses.
+        :param ips:
+        :param events:
+        :return:
+        """
+        Logger().debug(f"Executing general port scan on {ips}")
+
+        commands: list[str] = list(
+            map(
+                lambda ip: NmapCommandBuilder(ip, self.cidr)
+                .enable_service_scan()
+                .enable_full_port_scan()
+                .enable_aggressive_timing()
+                .enable_skip_host_discovery()
+                .enable_os_detection()
+                .enable_xml_to_stdout()
+                .build_without_cidr(),
+                ips,
+            )
+        )
+
+        return self.executor.async_pooled_execute(commands, events)
