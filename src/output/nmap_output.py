@@ -144,7 +144,7 @@ def build_port_summary_message(device_from_port_scan):
         .add(" Found the following information about:")
         .clear_formatting()
         .apply_bold_cyan(
-            message=f" {device_from_port_scan.ip_addr} {check_hostname_is_none(device_from_port_scan.hostname)}"
+            message=f" {device_from_port_scan.ip_addr} ({check_hostname_is_none(device_from_port_scan.hostname)})"
         )
         .build()
     )
@@ -205,7 +205,7 @@ def build_mac_addr_message(device: NmapDevice) -> str | None:
     if device.mac_addr is not None:
         return (
             TyperOutputBuilder()
-            .apply_bold_magenta(message="add mac address: ")
+            .apply_bold_magenta(message="and mac address: ")
             .apply_bold_cyan(message=f"{device.mac_addr} ")
             .build()
         )
