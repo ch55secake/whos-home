@@ -3,7 +3,7 @@ import re
 from rich import print as rprint
 
 from src.data.command_result import CommandResult
-from src.data.device import Device, Port
+from src.data.nmapdevice import NmapDevice, Port
 from src.data.scan_result import ScanResult
 from src.output.typer_output_builder import TyperOutputBuilder
 from src.util.logger import Logger
@@ -39,7 +39,7 @@ def format_and_output_from_check(command_result: CommandResult) -> None:
         )
 
 
-def format_and_output(scan_result: ScanResult, devices: list[Device]) -> None:
+def format_and_output(scan_result: ScanResult, devices: list[NmapDevice]) -> None:
     """
     Neatly outputs the devices it finds
     :param scan_result: scan_result from a nmap input
@@ -67,7 +67,7 @@ def format_and_output_from_port_scan(scan_result: ScanResult) -> None:
     :return: nothing only outputs to the user
     """
     Logger().debug("Outputting port scan results.... ")
-    device_from_port_scan: Device = scan_result.get_device()
+    device_from_port_scan: NmapDevice = scan_result.get_device()
     if (
         isinstance(device_from_port_scan.ports, list)
         and device_from_port_scan.ports
@@ -100,7 +100,7 @@ def build_port_info_message(port: Port) -> str:
     )
 
 
-def build_os_info_message(device_from_port_scan: Device) -> str:
+def build_os_info_message(device_from_port_scan: NmapDevice) -> str:
     """
     Build the os info message to be printed to the user
     :param device_from_port_scan: device to get the os info from
@@ -122,7 +122,7 @@ def build_os_info_message(device_from_port_scan: Device) -> str:
     )
 
 
-def contains_os_info(device_from_port_scan: Device) -> bool:
+def contains_os_info(device_from_port_scan: NmapDevice) -> bool:
     """
     Check if the device has OS information.
     :param device_from_port_scan: device to check
@@ -169,7 +169,7 @@ def check_hostname_is_none(hostname: str | None) -> str:
     return "(Unknown Hostname)"
 
 
-def build_ip_message(device: Device) -> str:
+def build_ip_message(device: NmapDevice) -> str:
     """
     Build the ip message to be printed to the user
     :param device: found from the scan
@@ -195,7 +195,7 @@ def build_post_scan_message() -> str:
     return TyperOutputBuilder().apply_bold_magenta(message=" [~] Scan complete!").build()
 
 
-def build_mac_addr_message(device: Device) -> str | None:
+def build_mac_addr_message(device: NmapDevice) -> str | None:
     """
     For a mac address there is a chance it's not present in the device, depending on if the user runs the command with
     sudo or not, hence the need for the check
@@ -212,7 +212,7 @@ def build_mac_addr_message(device: Device) -> str | None:
     return None
 
 
-def get_ip_and_mac_message(device: Device) -> str:
+def get_ip_and_mac_message(device: NmapDevice) -> str:
     """
     Get the message that contains the ip address, mac address and host name
     :param device: the device being iterated over
@@ -238,7 +238,7 @@ def get_ip_and_mac_message(device: Device) -> str:
     )
 
 
-def get_number_of_unique_devices(devices: list[Device]) -> int:
+def get_number_of_unique_devices(devices: list[NmapDevice]) -> int:
     """
     Get the number of unique devices based on the ip addresses
     :param devices: all devices passed in from the list
@@ -248,7 +248,7 @@ def get_number_of_unique_devices(devices: list[Device]) -> int:
     return len(unique_devices)
 
 
-def get_unique_devices_message(devices: list[Device]) -> str:
+def get_unique_devices_message(devices: list[NmapDevice]) -> str:
     """
     Get the unique devices message to be printed to the user
     :param devices: list of devices to check how many are unique
