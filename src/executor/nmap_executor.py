@@ -190,7 +190,7 @@ class NmapExecutor:
         :param events:
         :return:
         """
-        Logger().debug(f"Executing general port scan on {ips}")
+        Logger().debug(f"Executing full port scan on {ips}")
 
         commands: list[str] = list(
             map(
