@@ -32,7 +32,6 @@ class DefaultExecutor:
         Executes a command and returns the result
         :return: command result or none depending on success
         """
-
         self.output_sudo_warning(command)
         result = None
         try:

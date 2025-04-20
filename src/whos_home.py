@@ -1,5 +1,7 @@
+from functools import partial
 from typing import Annotated
 
+import schedule as scheduler
 import typer as t
 
 from src.data.command_result import CommandResult
@@ -11,6 +13,7 @@ from src.executor.nmap_executor import NmapExecutor
 from src.output.nmap_output import format_and_output, format_and_output_from_check
 from src.parser.nmap_output_parser import NmapOutputParser
 from src.util.logger import Logger
+from src.util.scheduler import Scheduler
 
 app: t.Typer = t.Typer()
 
@@ -44,6 +47,19 @@ def main(
     result_from_host_discovery: CommandResult = execute_host_discovery_based_on_flag(
         only_arp, only_icmp, icmp_and_arp, executor
     )
+
+    if schedule != "" or None:
+        Scheduler().schedule_task(
+            schedule_value=schedule,
+            main_fn=main,
+            host=host,
+            cidr=cidr,
+            timeout=timeout,
+            verbose=verbose,
+            check=check,
+            port_scan=port_scan,
+            extended_port_scan=extended_port_scan,
+        )
 
     if verbose:
         Logger().enable()
