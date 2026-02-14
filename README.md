@@ -1,5 +1,8 @@
 # whos-home
-🛰️ Scan for people on your local network and see whos home 
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ch55secake/whos-home)
+
+🛰️ Scan for people on your local network and see whos home
 
 ## Getting Started
 ### Dependencies
